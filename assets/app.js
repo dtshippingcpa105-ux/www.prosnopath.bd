@@ -45,6 +45,11 @@ const PB = {
     return params;
   },
 
+  feedbackHref(page, { type = "content", question = "" } = {}) {
+    const url = new URL(page, location.href);
+    return this.href("contact.html", { page: url.href, type, question: question.slice(0, 250) }) + "#feedbackForm";
+  },
+
   classById(id) {
     return CLASSES.find((entry) => entry.id === id);
   },

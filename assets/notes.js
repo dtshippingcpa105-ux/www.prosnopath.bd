@@ -92,7 +92,9 @@
         ? '<a href="' + escape(scholarship(current.subjectId)) + '">পূর্ণ বইয়ের বৃত্তি মডেল সেট</a>' : '')
       + '<a href="' + escape(current.source?.url || PB.href("textbooks.html")) + '">'
       + escape(current.source?.label || "পাঠ্যবইয়ের সরকারি উৎস") + '</a>'
-      + (current.source?.pages ? '<span>পাঠ্যবইয়ের পৃষ্ঠা ' + escape(current.source.pages) + '</span>' : '') + '</p>';
+      + (current.source?.pages ? '<span>পাঠ্যবইয়ের পৃষ্ঠা ' + escape(current.source.pages) + '</span>' : '') + '</p>'
+      + '<p class="question-feedback"><a href="' + escape(PB.feedbackHref(PB.href("notes.html", { note: current.id })))
+      + '">এই নোটে ভুল জানান</a></p>';
     if (hasPollinationLesson) {
       const lesson = PB.id("pollinationLesson").content.cloneNode(true);
       lesson.querySelector("[data-pollination-quiz]").href = PB.href("quiz.html", selection);

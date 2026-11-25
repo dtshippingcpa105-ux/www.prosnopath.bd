@@ -391,7 +391,10 @@
 .bank-filter-grid :disabled { color: #58647a; background: #f3f5fa; }
 .bank-results { max-width: 880px; margin-inline: auto; }
 .bank-result-tools { margin-block: .65rem .95rem; }
-.bank-question { padding: 0; margin-bottom: .7rem; }
+.bank-question { padding: 0; margin-bottom: .7rem; scroll-margin-top: 6rem; }
+.question-feedback { margin-top: .8rem; font-size: .92rem; }
+.bank-archive { margin-top: 1rem; }
+.bank-archive .actions { list-style: none; padding: 0; }
 .bank-question summary { min-height: 49px; padding: .8rem 1rem; font-weight: 600; color: #162547; }
 .bank-question .question-lines { white-space: pre-line; }
 .bank-question-inner { padding: 0 1rem 1rem; }
@@ -470,6 +473,7 @@
   .brand-depth:hover img, .premium-hero .actions .btn-primary:is(:hover,:active) { transform: none; }
 }
 @media print {
+  .question-feedback, .bank-archive { display: none !important; }
   .bank-filters, .bank-result-tools, .bank-empty-action, .bank-more { display: none !important; }
   .bank-question, .bank-question-inner { break-inside: avoid; box-shadow: none; }
   .paper-scholarship { display: none !important; }

@@ -379,7 +379,15 @@ progress::-webkit-progress-value { background: var(--blue); }
   .paper-order-actions { gap: .2rem .35rem; }
 }
 
-@page proshnopath-paper { size: A4; margin: 14mm; }
+@page proshnopath-paper {
+  size: A4;
+  margin: 14mm;
+  @bottom-right {
+    content: counter(page) " / " counter(pages);
+    color: #475569;
+    font: 9pt sans-serif;
+  }
+}
 @media print {
   main:has(.paper-layout) .page-hero, .paper-workspace, .paper-toolbar, #wpadminbar {
     display: none !important;

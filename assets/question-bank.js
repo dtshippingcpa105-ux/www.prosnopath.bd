@@ -26,6 +26,8 @@
     const byId = new Map(questions.map((record) => [record.id, record]));
     const answers = new Map();
     const params = PB.params();
+    const questionAnchor = (id) => "question-" + encodeURIComponent(id).replaceAll("%", "_");
+    const linkedQuestion = questions.find(({ id }) => "#" + questionAnchor(id) === location.hash);
     const names = [
       ["class", "শ্রেণি"], ["subject", "বিষয়"], ["chapter", "অধ্যায়"],
       ["type", "প্রশ্নের ধরন"], ["source", "প্রশ্নের উৎস"]
@@ -92,7 +94,7 @@
       const sourceLabel = PB.questionSources[source];
       const sourceUrl = typeof item.source?.url === "string" && /^https:\/\//i.test(item.source.url) ? item.source.url : "";
       const attribution = sourceUrl ? '<a href="' + escape(sourceUrl) + '">' + escape(sourceLabel) + '</a>' : escape(sourceLabel);
-      const detail = [item.source?.board, item.source?.year].filter(Boolean).map((part) => escape(part)).join(" · ");
+      const detail = [item.source?.board, item.source?.year, item.source?.locator].filter(Boolean).map((part) => escape(part)).join(" · ");
       const reference = entry.reference;
       const reading = reference && /^https:\/\//i.test(reference.url)
         ? '<span><a href="' + escape(reference.url) + '">পাঠ্যবই</a> · পৃ. ' + escape(reference.pages) + '</span>' : "";
@@ -104,12 +106,17 @@
         : '<p class="muted">' + PB.bn(item.marks) + ' নম্বর</p>'
           + (item.solution ? '<details class="short-answer"><summary>নমুনা উত্তর দেখুন</summary><p class="question-lines">'
             + escape(item.solution) + '</p>' + (item.criteria?.length ? '<ul>' + PB.rubric(item.criteria) + '</ul>' : '') + '</details>' : "");
-      return '<details class="panel bank-question" data-question="' + escape(id) + '"' + (index === 0 ? ' open' : '') + '>'
+      const anchor = questionAnchor(id);
+      const page = bank({ class: entry.classId, subject: entry.subjectId, chapter: entry.chapter, type, source }) + "#" + anchor;
+      const report = PB.feedbackHref(page, { question: item.q });
+      return '<details class="panel bank-question" id="' + escape(anchor) + '" data-question="' + escape(id) + '"'
+        + (index === 0 || linkedQuestion?.id === id ? ' open' : '') + '>'
         + '<summary class="question-lines" id="bank-question-' + index + '">' + PB.bn(index + 1) + '. ' + escape(item.q)
         + '</summary><div class="bank-question-inner"><div class="bank-provenance"><span>' + escape(types[type])
         + '</span><span>' + escape(PB.classById(entry.classId).name + " · " + SUBJECTS[entry.subjectId].name + " · " + entry.chapter)
         + '</span><span>উৎস ' + attribution + (detail ? ' · ' + detail : '') + '</span>' + reading
-        + '</div>' + options + '</div></details>';
+        + '</div>' + options + '<p class="question-feedback"><a href="' + escape(report)
+        + '">এই প্রশ্নে ভুল জানান</a></p></div></details>';
     }
 
     function applyAnswer(card, item, choice) {
@@ -117,6 +124,16 @@
       const explanation = card.querySelector(".q-explain");
       explanation.hidden = false;
       explanation.textContent = (choice === item.answer ? "সঠিক। " : "সঠিক উত্তর " + item.options[item.answer] + "। ") + item.explain;
+    }
+
+    function boardReferences(filters) {
+      if (filters.source !== "board" || (filters.class && filters.class !== "c8")) return "";
+      const refs = Object.entries(CLASS_EIGHT_BOARD_ANSWER_KEYS)
+        .filter(([subject]) => !filters.subject || subject === filters.subject);
+      return refs.length ? '<aside class="panel bank-archive"><h3>২০২৫ সালের জুনিয়র বৃত্তি পরীক্ষার নমুনা উত্তরমালা</h3>'
+        + '<p>বরিশাল শিক্ষা বোর্ড পরীক্ষকদের জন্য এই মূল্যায়ন নথিগুলো প্রকাশ করেছে।</p><ul class="actions">'
+        + refs.map(([subject, url]) => '<li><a href="' + escape(url) + '">'
+          + escape(SUBJECTS[subject].name) + ' (PDF)</a></li>').join("") + '</ul></aside>' : "";
     }
 
     function render(moveFocus = false) {
@@ -140,7 +157,7 @@
         ? entries.find((row) => row.classId === filters.class && row.subjectId === filters.subject && row.chapter === filters.chapter)
         : null;
       const heading = filters.chapter || (filters.subject && SUBJECTS[filters.subject].name) || "প্রশ্নের ফলাফল";
-      const buttons = entry?.mcq.length
+      const buttons = !filters.source && entry?.mcq.length
         ? '<a class="btn btn-primary" href="' + escape(PB.href("quiz.html", { class: entry.classId, subject: entry.subjectId, chapter: entry.chapter })) + '">এই সেটের কুইজ দিন</a>' : "";
       const note = entry?.noteId ? '<a class="btn btn-secondary" href="' + escape(PB.href("notes.html", { note: entry.noteId })) + '">অধ্যায়ের নোট</a>' : "";
       const print = matches.length ? '<button class="btn btn-secondary" type="button" id="printPractice">প্রিন্ট / PDF</button>' : "";
@@ -159,8 +176,7 @@
         + (!matches.length && filters.source === "nctb" ? '<p class="bank-empty-action"><a href="'
           + escape(PB.href("textbooks.html")) + '">এনসিটিবি পাঠ্যবই দেখুন</a></p>' : '')
         + (pages.length < matches.length ? '<button id="bankMore" class="btn btn-secondary bank-more" type="button">আরও প্রশ্ন দেখুন</button>' : '')
-        + (entry ? '<div class="actions bank-result-tools"><a href="' + escape(PB.href("contact.html", { page: bank(filters) }))
-          + '">ভুল জানাতে খসড়া তৈরি করুন</a></div>' : '') + '</section>';
+        + boardReferences(filters) + '</section>';
       for (const card of output.querySelectorAll(".bank-question")) {
         const id = card.dataset.question;
         if (expanded.has(id)) card.open = true;
@@ -210,7 +226,14 @@
       printState.forEach((card) => { card.open = false; });
       printState = [];
     });
+    if (linkedQuestion) {
+      const entry = linkedQuestion.entry;
+      const relevant = questions.filter((row) => row.entry === entry
+        && row.type === linkedQuestion.type && row.source === linkedQuestion.source);
+      shown = Math.max(limit, Math.ceil((relevant.indexOf(linkedQuestion) + 1) / limit) * limit);
+    }
     render();
+    if (linkedQuestion) requestAnimationFrame(() => PB.id(questionAnchor(linkedQuestion.id))?.scrollIntoView());
   }
 })();
 
