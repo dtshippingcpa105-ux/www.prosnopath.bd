@@ -11,7 +11,7 @@ const types = {
   jpg: "image/jpeg"
 };
 const missing = (await readFile(new URL("404.html", root), "utf8"))
-  .replace("<head>", '<head>\n  <base href="/">');
+  .replaceAll('"/www.prosnopath.bd/', '"/');
 const port = Number(process.argv[2] || 4173);
 
 const server = createServer(async (request, response) => {
@@ -25,7 +25,7 @@ const server = createServer(async (request, response) => {
   const extension = file.split(".").at(-1);
   if (/^(?:assets\/)?[a-z\d-]+\.(?:html|js|css|png|jpg)$/.test(file)) {
     try {
-      const data = await readFile(fileURLToPath(new URL(file, root)));
+      const data = file === "404.html" ? missing : await readFile(fileURLToPath(new URL(file, root)));
       response.writeHead(200, {
         "Content-Type": types[extension],
         "Cache-Control": "no-cache",

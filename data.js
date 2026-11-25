@@ -48,6 +48,14 @@ const SUBJECTS = {
 // কুইজ ও সার্চ স্বয়ংক্রিয়ভাবে এই ডেটা ব্যবহার করে।
 
 const CLASS_EIGHT_BGS_TEXTBOOK = "https://drive.google.com/file/d/1aY3sFRDEQsAGUlUg3SvKgh5TI3lKJ1RB/view?usp=drive_link";
+const CLASS_EIGHT_TEXTBOOKS = "https://nctb.gov.bd/pages/static-pages/695b9858c4774958d7b703d8";
+const CLASS_EIGHT_BOARD_ANSWER_KEYS = {
+  bangla: "https://www.barisalboard.gov.bd/webroot/newscorner/dcontroller-6846759568386.pdf",
+  english: "https://www.barisalboard.gov.bd/webroot/newscorner/dcontroller-1074705347285.pdf",
+  math: "https://www.barisalboard.gov.bd/webroot/newscorner/dcontroller-1993292399704.pdf",
+  science: "https://www.barisalboard.gov.bd/webroot/newscorner/dcontroller-2119055596882.pdf",
+  bgs: "https://www.barisalboard.gov.bd/webroot/newscorner/dcontroller-3964632955572.pdf"
+};
 
 const QUESTION_BANK = {
   "c9|physics": {
@@ -2791,3 +2799,230 @@ const QUESTION_BANK = {
     }
   }
 };
+
+/* অষ্টম শ্রেণির বাংলা ও ইংরেজির নিজস্ব অধ্যায়ভিত্তিক অনুশীলন। */
+(() => {
+  const mcq = (q, options, answer, explain) => ({ q, options, answer, explain });
+  const written = (q, marks, solution, criteria) => ({
+    q, marks, solution, criteria: criteria.map(([text, points]) => ({ text, marks: points }))
+  });
+  const chapter = (mcq, short, pages) => ({
+    mcq, short, ...(pages ? { reference: { url: CLASS_EIGHT_TEXTBOOKS, pages } } : {})
+  });
+
+  Object.assign(QUESTION_BANK["c8|bangla"].chapters, {
+    "পড়ে পাওয়া": chapter([
+      mcq("‘পড়ে পাওয়া’ গল্পে বাক্সটি পাওয়ার পর ছেলেদের প্রধান দায়িত্ব কী ছিল?",
+        ["বাক্সটির দাম জানা", "প্রকৃত মালিককে খুঁজে বের করা", "বাক্সটি অন্য গ্রামে নিয়ে যাওয়া", "বাক্সটি ভাগ করে নেওয়া"], 1,
+        "তারা কুড়িয়ে পাওয়া সম্পদের মালিকানা দাবি না করে প্রকৃত মালিককে ফেরত দেওয়ার চেষ্টা করে।"),
+      mcq("কোন কাজটি ছেলেদের উদ্যোগের সঙ্গে সবচেয়ে বেশি মেলে?",
+        ["হারানো জিনিসের খবর জানিয়ে দাবিদারের কাছে প্রমাণ চাওয়া", "কারও দাবি শুনেই জিনিস দিয়ে দেওয়া", "জিনিসটি নিজের কাছে রেখে খবর গোপন করা", "মালিকের বদলে বন্ধুকে জিনিস দেওয়া"], 0,
+        "হারানো জিনিস ফেরত দিতে খবর ছড়ানোর পাশাপাশি প্রকৃত মালিকের পরিচয় যাচাই করা দরকার।"),
+      mcq("বাক্সটির মালিক খোঁজার ঘটনায় কোন দুটি গুণ একসঙ্গে দেখা যায়?",
+        ["আত্মপ্রচার ও খ্যাতির আকাঙ্ক্ষা", "ধনলিপ্সা ও প্রতিযোগিতা", "সততা ও দায়িত্ববোধ", "ভয় ও উদাসীনতা"], 2,
+        "বাক্সটি নিজেরা রেখে না দেওয়া সততা, আর তা ফেরত দেওয়ার ব্যবস্থা করা দায়িত্ববোধের প্রকাশ।")
+    ], [
+      written("বিদ্যালয়ে নামহীন একটি পানির বোতল পেলে ‘পড়ে পাওয়া’ গল্পের ভাব অনুসারে তুমি কী দুটি কাজ করবে? কারণসহ লেখো।", 4,
+        "আমি বোতলটি বিদ্যালয়ের দায়িত্বপ্রাপ্ত শিক্ষকের কাছে জমা দেব এবং কোথায় পেয়েছি জানাব। শিক্ষককে দিয়ে বোতল পাওয়ার খবর জানাব। যে শিক্ষার্থী মালিক বলে দাবি করবে, সে যেন বোতলের রং বা চিহ্ন মিলিয়ে বলতে পারে। এতে জিনিসটি সঠিক ব্যক্তির কাছে পৌঁছানোর সম্ভাবনা বাড়বে।",
+        [["জিনিস নিরাপদে জমা ও খবর দেওয়ার পরিকল্পনা", 2], ["মালিকানা যাচাইয়ের যুক্তি", 2]])
+    ], "৯–১০"),
+    "ভাব ও কাজ": chapter([
+      mcq("কোন উদ্যোগটি ‘ভাব ও কাজ’-এর বক্তব্যের সবচেয়ে ভালো উদাহরণ?",
+        ["ময়লা দেখে দুঃখ প্রকাশ", "পরিচ্ছন্নতা নিয়ে শুধু স্লোগান লেখা", "পুকুরের দূষণ নিয়ে গুজব ছড়ানো", "দূষণের উৎস চিহ্নিত করে পরিচ্ছন্নতার কাজ ভাগ করা"], 3,
+        "সমস্যা সম্পর্কে সচেতনতার সঙ্গে পরিকল্পনা ও বাস্তব কাজ এখানে মিলেছে।"),
+      mcq("‘ভাব ও কাজ’ অনুযায়ী কোনো পরিকল্পনার ফল পেতে কোনটি বিশেষভাবে দরকার?",
+        ["অনুভব থেকে নির্দিষ্ট কাজে এগোনো", "কাজ শুরুর আগেই পুরস্কার ঠিক করা", "সব কাজ অন্যের ওপর ছেড়ে দেওয়া", "বাস্তব সমস্যা নিয়ে আলোচনা বন্ধ করা"], 0,
+        "ভাব কাজে দিকনির্দেশ দেয়। বাস্তব পদক্ষেপ সেই ভাবকে ফলপ্রসূ করে।"),
+      mcq("অসহায় সহপাঠীর পড়ার অসুবিধা দেখে কোন প্রতিক্রিয়ায় ভাব ও কাজ দুটিই আছে?",
+        ["তার নম্বর দেখে হাসা", "তার সময় বুঝে সপ্তাহে এক দিন একসঙ্গে পড়ার ব্যবস্থা করা", "কেবল সামাজিক মাধ্যমে দুঃখ প্রকাশ করা", "কারও সাহায্যের অপেক্ষায় বিষয়টি ভুলে যাওয়া"], 1,
+        "সহানুভূতির পর সহপাঠীর প্রয়োজন অনুযায়ী সাহায্য করার উদ্যোগ নেওয়া হয়েছে।")
+    ], [
+      written("‘কথা বললেই বিদ্যালয়ে পানির অপচয় থামবে’ এই মতটির সীমা ‘ভাব ও কাজ’-এর আলোকে বোঝাও। একটি বাস্তব পদক্ষেপ প্রস্তাব করো।", 4,
+        "আলোচনা মানুষকে সমস্যা বুঝতে সাহায্য করে, কিন্তু নষ্ট কল সারানো বা খোলা কল বন্ধ করার ব্যবস্থা না করলে অপচয় চলবে। শিক্ষার্থীরা কোন কল দিয়ে পানি পড়ছে তা লিখে শিক্ষককে জানাতে পারে এবং মেরামতের পর অপচয় কমেছে কি না দেখতে পারে।",
+        [["আলোচনার ভূমিকা ও সীমা", 2], ["সমস্যার সঙ্গে সম্পর্কিত বাস্তব পদক্ষেপ", 2]])
+    ], "১৬–১৭"),
+    "সুখী মানুষ": chapter([
+      mcq("‘সুখী মানুষ’ নাটিকায় মোড়লের সম্পদ কোন সমস্যার সমাধান করে না?",
+        ["তার মানসিক অশান্তি", "তার সম্পদের পরিমাণ", "বাড়ির আয়তন", "পেশার পরিচয়"], 0,
+        "মোড়লের প্রাচুর্য থাকলেও তার অন্তরে শান্তি নেই।"),
+      mcq("নাটিকার শেষ দৃশ্যের লোকটির সুখের সঙ্গে কোন বৈশিষ্ট্য মেলে?",
+        ["সম্পদ দেখানোর অভ্যাস", "অন্যের সবকিছু পাওয়ার চেষ্টা", "অল্প আয়ে নিজের প্রয়োজন মিটিয়ে তৃপ্ত থাকা", "সমস্যা আড়াল করার প্রবণতা"], 2,
+        "লোকটির প্রত্যাশা ও প্রয়োজন সীমিত। সে নিজের উপার্জনে সন্তুষ্ট থাকে।"),
+      mcq("মোড়ল ও শেষ দৃশ্যের লোকটির বিপরীত অবস্থান দেখিয়ে নাটিকাটি কোন ধারণাটি পরীক্ষা করে?",
+        ["সুখের জন্য ধনসম্পদই যথেষ্ট কি না", "গ্রাম কোথায় গড়ে ওঠে", "কোন পেশায় আয় বেশি", "চিকিৎসার নানা পদ্ধতি"], 0,
+        "একজন ধনী হয়েও অশান্ত এবং অন্যজন অল্পে তৃপ্ত। এই পার্থক্যেই সুখ ও সম্পদের সম্পর্কটি প্রশ্নের মুখে পড়ে।")
+    ], [
+      written("নাটিকার মোড়ল ও শেষ দৃশ্যের লোকটির জীবন থেকে সুখ সম্পর্কে একটি সিদ্ধান্ত লেখো। দুই চরিত্রের উল্লেখ করো।", 4,
+        "মোড়লের প্রাচুর্য তার অশান্তি দূর করতে পারেনি। শেষ দৃশ্যের লোকটি অল্প উপার্জনেও স্বাভাবিক জীবন নিয়ে তৃপ্ত। চরিত্র দুটি দেখায়, প্রয়োজন মেটানোর পাশাপাশি মনের সন্তুষ্টি সুখে গুরুত্বপূর্ণ।",
+        [["দুই চরিত্রের যথার্থ তুলনা", 2], ["তুলনাভিত্তিক সিদ্ধান্ত", 2]])
+    ], "৩৭–৪০"),
+    "মানবধর্ম": chapter([
+      mcq("‘মানবধর্ম’ কবিতায় নানা উৎসের জলের উপমা কী বোঝাতে সাহায্য করে?",
+        ["জলের ব্যবহার শুধু পানের জন্য", "বাহ্যিক ভেদের নিচে মানুষের মৌলিক মিল", "উৎস বদলালে সব মানুষ একই কাজ করে", "নদী সব সময় কুয়ার চেয়ে বিশুদ্ধ"], 1,
+        "জলের উৎসের নাম আলাদা হলেও জল হিসেবে মিল থাকে। উপমাটি মানুষের পরিচয়ের বাহ্যিক ভেদ নিয়ে ভাবায়।"),
+      mcq("মানবধর্মের ভাবের সঙ্গে কোন আচরণটি সবচেয়ে সংগত?",
+        ["ভিন্ন পরিচয়ের সহপাঠীকেও সমান মর্যাদা দেওয়া", "নাম শুনেই কাউকে অযোগ্য ভাবা", "শুধু নিজের দলের বন্ধুকে কথা বলতে দেওয়া", "পরিচয় জানলেই চরিত্রের বিচার শেষ করা"], 0,
+        "কবিতার মানবিক দৃষ্টিভঙ্গি মানুষকে বাহ্যিক পরিচয়ের ঊর্ধ্বে সমান মর্যাদা দিতে শেখায়।"),
+      mcq("কবিতায় পরিচয় নিয়ে প্রশ্ন তোলার তাৎপর্য কী?",
+        ["নদীর উৎস গণনা করা", "সব সামাজিক সমস্যার একটিমাত্র সমাধান দেওয়া", "কবির ব্যক্তিগত জীবনের তারিখ জানা", "মানুষকে বিভাগে ফেলার প্রচলিত ধারণা নিয়ে ভাবতে শেখানো"], 3,
+        "প্রশ্নের মাধ্যমে কবি দেখান, মানুষের মূল্য বোঝার জন্য প্রচলিত পরিচয়ই যথেষ্ট নয়।")
+    ], [
+      written("একজন নতুন সহপাঠীর ভাষা আলাদা বলে তাকে দলে নিতে কেউ রাজি নয়। ‘মানবধর্ম’-এর ভাব ব্যবহার করে তুমি কী বলবে?", 4,
+        "আমি বলব ভাষার পার্থক্য কারও মর্যাদা বা শেখার ক্ষমতা কমায় না। ‘মানবধর্ম’ মানুষকে পরিচয়ের ভেদ ছাড়িয়ে দেখতে শেখায়। আমরা তার কথা মন দিয়ে শুনব এবং তাকে দলের কাজ বেছে নেওয়ার সমান সুযোগ দেব।",
+        [["কবিতার ভাব শনাক্ত", 2], ["ঘটনায় ভাবের প্রয়োগ ও প্রস্তাব", 2]])
+    ], "৭৪–৭৫"),
+    "দুই বিঘা জমি": chapter([
+      mcq("‘দুই বিঘা জমি’ কবিতায় উপেনের শেষ সম্বল কোনটি?",
+        ["একটি গবাদিপশু", "দুটি গাছ", "দুই বিঘা জমি", "একটি নৌকা"], 2,
+        "উপেনের হাতে অবশিষ্ট ছিল দুই বিঘা জমি। জমির সঙ্গে তার জীবিকা ও স্মৃতি জড়িত।"),
+      mcq("উপেনের জমি হারানোর ঘটনায় কোন সামাজিক সমস্যা প্রকাশ পায়?",
+        ["অসহায় মানুষের বিরুদ্ধে ক্ষমতার অপব্যবহার", "একই জমিতে বহু ফসল উৎপাদন", "কৃষিপণ্যের বাজার সম্প্রসারণ", "ভিন্ন অঞ্চলের আবহাওয়ার পার্থক্য"], 0,
+        "ক্ষমতাবান ব্যক্তি ভূমির প্রতি উপেনের ন্যায্য দাবি উপেক্ষা করতে পারে। এতে ক্ষমতার অসমতা প্রকাশ পায়।"),
+      mcq("পুরোনো জমির কাছে উপেনের ফিরে আসা কোন অনুভূতিকে সবচেয়ে বেশি প্রকাশ করে?",
+        ["অন্যের সম্পদ দখলের ইচ্ছা", "জন্মভূমি ও স্মৃতির প্রতি টান", "ব্যবসায় প্রতিযোগিতার আগ্রহ", "ভ্রমণের নতুন পরিকল্পনা"], 1,
+        "জমি হারিয়েও উপেনের মনে নিজের ভিটা ও অতীতের স্মৃতির টান রয়ে যায়।")
+    ], [
+      written("উপেনের কাছে জমিটি কেন আর্থিক সম্পদের চেয়েও বেশি গুরুত্বপূর্ণ ছিল? কবিতার দুটি দিক ব্যবহার করো।", 4,
+        "জমিটি উপেনের বেঁচে থাকার অবলম্বন ছিল। একই সঙ্গে তা তার পরিচিত ভিটা ও স্মৃতি বহন করত। বহুদিন পর সেখানে ফিরে যাওয়ার ঘটনায় বোঝা যায়, মালিকানা চলে গেলেও জায়গাটির সঙ্গে মানসিক সম্পর্ক হারায়নি।",
+        [["জীবিকার দিক ব্যাখ্যা", 2], ["স্মৃতি বা ভিটার সঙ্গে সম্পর্ক ব্যাখ্যা", 2]])
+    ], "৮৫–৮৭"),
+    "আবেদনপত্র": chapter([
+      mcq("বিদ্যালয়ের প্রধান শিক্ষকের কাছে পাঠাগার ব্যবহারের অনুমতি চাইলে কোন বিষয়টি সবচেয়ে স্পষ্ট?",
+        ["একটি কথা ছিল", "পাঠাগার ব্যবহারের অনুমতির আবেদন", "আমাদের বিদ্যালয় সম্পর্কে", "আপনার সঙ্গে দেখা"], 1,
+        "বিষয়ে আবেদনটির নির্দিষ্ট উদ্দেশ্য উল্লেখ করা দরকার।"),
+      mcq("আবেদনপত্রে অনুমতি চাওয়ার কারণ কোথায় বলা উপযুক্ত?",
+        ["তারিখের স্থানে", "স্বাক্ষরের পরে শুধু পাদটীকায়", "শিরোনামের আগে আলাদা স্লোগানে", "আবেদনের মূল বক্তব্যে"], 3,
+        "মূল বক্তব্যে অনুরোধ, কারণ এবং প্রয়োজনীয় তথ্য সংক্ষেপে থাকে।"),
+      mcq("প্রধান শিক্ষকের কাছে কোন ভাষাটি প্রাসঙ্গিক?",
+        ["অনুমতি দিলে আমরা নির্ধারিত সময়ে পাঠাগার ব্যবহার করতে পারব।", "আপনি অবশ্যই এখনই অনুমতি দেবেন।", "আমি বলছি, সিদ্ধান্ত এটাই।", "এই কাজের কথা কাউকে বলবেন না।"], 0,
+        "ভদ্র ও নির্দিষ্ট বাক্যে অনুরোধের উদ্দেশ্য এবং প্রস্তাবিত ব্যবস্থা বোঝানো হয়েছে।")
+    ], [
+      written("সপ্তাহে এক দিন বিদ্যালয়ের পাঠাগার ব্যবহারের অনুমতি চেয়ে প্রধান শিক্ষকের কাছে একটি আবেদনপত্র লেখো।", 5,
+        "তারিখ: ১০ নভেম্বর ২০২৬\nবরাবর\nপ্রধান শিক্ষক, উদয় মাধ্যমিক বিদ্যালয়।\nবিষয়: সাপ্তাহিক পাঠাগার ব্যবহারের অনুমতির আবেদন।\nমহোদয়, আমরা অষ্টম শ্রেণির কয়েকজন শিক্ষার্থী প্রতি বৃহস্পতিবার শেষ পাঠের পর আধা ঘণ্টা পাঠাগারে বই পড়তে চাই। পাঠাগারের নিয়ম মেনে দায়িত্বপ্রাপ্ত শিক্ষকের তত্ত্বাবধানে কাজটি করতে পারব। এ সময়ে পাঠাগার ব্যবহারের অনুমতি দেওয়ার অনুরোধ করছি।\nবিনীত\nঅষ্টম শ্রেণির শিক্ষার্থীদের পক্ষে\nমেহেদী",
+        [["প্রাপক, বিষয় ও সমাপ্তির বিন্যাস", 2], ["কারণ, সময় ও তত্ত্বাবধানের প্রস্তাব", 2], ["ভদ্র ও স্পষ্ট ভাষা", 1]])
+    ]),
+    "সারাংশ ও ভাবসম্প্রসারণ": chapter([
+      mcq("সারাংশ লেখার সময় কোনটি রাখা দরকার?",
+        ["মূল বক্তব্য বজায় রেখে প্রয়োজনীয় তথ্য", "মূল লেখার সঙ্গে অসংগত ব্যক্তিগত মন্তব্য", "প্রতিটি উদাহরণ ও সব উপমা", "শুধু সবচেয়ে দীর্ঘ বাক্যটি"], 0,
+        "সারাংশ মূল বক্তব্যকে ছোট করে তুলে ধরে। গৌণ উদাহরণ ও নতুন মত বাদ দেওয়া হয়।"),
+      mcq("ভাবসম্প্রসারণে একটি উদাহরণের কাজ কী?",
+        ["মূল ভাবের জায়গায় নতুন বিষয় আনা", "মূল ভাবটি কীভাবে বাস্তবে দেখা যায় তা বোঝানো", "একই বাক্য হুবহু বারবার লেখা", "উপসংহারের সঙ্গে বিরোধ তৈরি করা"], 1,
+        "উদাহরণ মূল ধারণাকে স্পষ্ট ও বাস্তব করে।"),
+      mcq("একটি অনুচ্ছেদের বক্তব্য প্রতিদিন অল্প পড়লে শেখা স্থায়ী হয়। কোনটি এর উপযুক্ত সারাংশ?",
+        ["দীর্ঘ বই পড়ার সময় বেশি লাগে।", "সব শিক্ষার্থীর একই বই পড়া উচিত।", "নিয়মিত অল্প পড়ার অভ্যাস দীর্ঘমেয়াদে শেখাকে মজবুত করে।", "কেবল পরীক্ষার আগের রাতেই পড়া যথেষ্ট।"], 2,
+        "বাক্যটিতে নিয়মিত অনুশীলন ও স্থায়ী শেখার সম্পর্কটি আছে।")
+    ], [
+      written("‘ছোট ছোট নিয়মিত চেষ্টা বড় সাফল্যের ভিত্তি’ ভাবটি ৫–৬টি বাক্যে সম্প্রসারণ করো।", 5,
+        "এক দিনে অনেক কিছু করার চেয়ে প্রতিদিন সামান্য কাজ করে যাওয়া অনেক সময় বেশি ফল দেয়। নিয়মিত চেষ্টা দুর্বলতা চেনার সুযোগ তৈরি করে। প্রতিদিন কয়েকটি অঙ্ক করে ভুলগুলো বুঝে নিলে পরের দিন নতুন অঙ্ক করা সহজ হয়। অল্প অল্প করে শেখা জমতে জমতে বড় দক্ষতায় পরিণত হয়। তাই বড় লক্ষ্য পূরণে টেকসই ছোট অভ্যাস গড়ে তোলা দরকার।",
+        [["মূল ভাব স্পষ্ট করা", 2], ["প্রাসঙ্গিক উদাহরণ ও যুক্তি", 2], ["সংগত সমাপ্তি ও ভাষা", 1]])
+    ])
+  });
+
+  Object.assign(QUESTION_BANK["c8|english"].chapters, {
+    "Reading: The Little Bird": chapter([
+      mcq("In The Little Bird, why is the cage an important part of the story?",
+        ["It shows that the bird is free to choose where to live.", "It becomes the birthday gift.", "It represents the bird's loss of freedom.", "It makes the garden a safer place for all birds."], 2,
+        "Seryozha puts the wild bird in a cage, where it depends on him and cannot leave freely."),
+      mcq("Which action would have followed the mother's advice?",
+        ["Letting the siskin go after catching it", "Moving the cage indoors", "Putting extra grain in the trap", "Waiting to catch another bird"], 0,
+        "His mother advises him to release the bird."),
+      mcq("How does the story primarily develop its message?",
+        ["Through a description of bird species", "Through the consequences of keeping a wild bird", "Through a list of hunting rules", "Through instructions for building a window"], 1,
+        "The bird's fate makes Seryozha reconsider what he did."),
+    ], [
+      written("Explain how Seryozha's idea of caring for the bird changes. Use one event from the story.", 4,
+        "At first, Seryozha thinks he can care for a wild bird by keeping it and giving it food. When the siskin is injured after escaping from the cage and later dies, he understands that keeping it caused harm. He decides never to catch another bird.",
+        [["Initial view and change", 2], ["Relevant event and connection to the change", 2]])
+    ], "৪৫–৪৭"),
+    "Reading: Unseen Passage": chapter([
+      mcq("Read: The school garden had lost water quickly in the sun. Nila covered the soil with dry leaves. A week later it stayed damp longer. Why did Nila use the leaves?",
+        ["To attract more sunlight", "To help the soil hold moisture", "To mark the length of the garden", "To replace all the plants"], 1,
+        "The covered soil stayed damp for longer, so the leaves helped it retain water."),
+      mcq("Read: Jamil counted how many books crossed the library desk each day before moving the return box. He counted again for a week after the change. Why did he count twice?",
+        ["To compare the situation before and after the change", "To prove that every book had been lost", "To change the library's opening time", "To check who had a library card"], 0,
+        "The two counts let him compare what happened on either side of the change."),
+      mcq("Read: The bus stopped short of the school because the road was flooded. The pupils followed a raised footpath and reached the gate safely. Which title fits the whole passage best?",
+        ["Buying a School Bus", "Learning to Swim", "A Safe Way Around a Flooded Road", "An Empty Classroom"], 2,
+        "The title describes both the problem and how the pupils overcame it."),
+    ], [
+      written("Read: A class left a box of spare pencils near the door. Anyone could borrow one and return it after the lesson. At first seven pencils went missing. The class then placed a return cup on the teacher's desk, and the number missing fell. In two sentences, state the problem and how the class responded.", 4,
+        "Seven pencils borrowed from the class box were initially not returned. The class put a return cup on the teacher's desk, and fewer pencils went missing afterward.",
+        [["Accurate statement of the problem", 2], ["Accurate response and outcome", 2]])
+    ]),
+    "Vocabulary in Context": chapter([
+      mcq("The footpath was narrow, so the pupils walked in a single line. What does narrow mean here?",
+        ["Very noisy", "Quite slippery", "Not wide", "Far away"], 2,
+        "Walking in a single line gives a clue that the path is not wide."),
+      mcq("Joya hesitated before stepping across the stream. Which word is closest to hesitated here?",
+        ["Rushed", "Paused", "Shouted", "Slipped"], 1,
+        "She paused briefly because she was unsure whether to step across."),
+      mcq("The librarian asked us to return the fragile model carefully. Which word is nearest in meaning to fragile?",
+        ["Easily broken", "Very valuable", "Hard to notice", "Easy to borrow"], 0,
+        "Careful handling is needed because the model can break easily."),
+    ], [
+      written("Read: Noor found the old timetable confusing. The new one used short headings and a simple grid, so she could read it at a glance. Explain what at a glance means, then use it in a new sentence.", 4,
+        "At a glance means after looking at something quickly. Example: I could tell at a glance which plants needed water.",
+        [["Meaning in context", 2], ["Correct and meaningful new sentence", 2]])
+    ]),
+    "Articles and Prepositions": chapter([
+      mcq("Choose a or an. We waited for ___ hour.",
+        ["a", "no article", "an", "the"], 2,
+        "The h in hour is silent. The word begins with a vowel sound, so an fits this sentence."),
+      mcq("Choose the correct preposition. The meeting begins ___ nine o'clock.",
+        ["on", "at", "in", "for"], 1,
+        "Use at with a specific clock time."),
+      mcq("Choose a or an. Rumi borrowed ___ European history book.",
+        ["an", "no article", "the", "a"], 3,
+        "European begins with the consonant sound /j/, so the indefinite article is a."),
+    ], [
+      written("Complete the notice using one article and two prepositions. Our class will visit ___ old bridge ___ Monday. Please wait ___ the school gate.", 3,
+        "Our class will visit an old bridge on Monday. Please wait at the school gate.",
+        [["an before old", 1], ["on before Monday", 1], ["at or another suitable preposition for the meeting point", 1]])
+    ]),
+    "Right Form of Verbs": chapter([
+      mcq("Choose the correct form. Mina usually ___ the plants before school.",
+        ["waters", "water", "is watering", "have watered"], 0,
+        "Usually signals a habit. With the singular subject Mina, use waters."),
+      mcq("Choose the correct form. By the time we reached the hall yesterday, the play ___ already begun.",
+        ["has", "have", "had", "was"], 2,
+        "Had begun marks the event that happened before we reached the hall."),
+      mcq("Choose the correct form. Look! The children ___ a poster now.",
+        ["made", "are making", "makes", "has made"], 1,
+        "Look and now signal an action in progress. The plural subject takes are making."),
+    ], [
+      written("Complete the sentences with the correct verb forms. The club (meet) every Tuesday. Last Tuesday it (choose) a new leader. Since then, the leader (prepare) two agendas.", 3,
+        "The club meets every Tuesday. Last Tuesday it chose a new leader. Since then, the leader has prepared two agendas.",
+        [["meets for a habit", 1], ["chose for a finished past event", 1], ["has prepared for a result up to now", 1]])
+    ]),
+    "Sentence Transformation and Punctuation": chapter([
+      mcq("Make the sentence interrogative. They have finished the survey.",
+        ["Did they have finished the survey?", "Have they finished the survey?", "Has they finished the survey?", "They have finished the survey."], 1,
+        "Move have before the plural subject they to form the question."),
+      mcq("Choose the correct capitalisation and punctuation.",
+        ["May i use your ruler.", "may I use your ruler?", "May I use your ruler?", "May i use your ruler?"], 2,
+        "Start the sentence with a capital, always capitalise I and end the question with a question mark."),
+      mcq("Choose the exclamatory form. It is a very bright morning.",
+        ["What a bright morning it is!", "It has been a bright morning.", "Is it a bright morning?", "Make the morning bright."], 0,
+        "What a bright morning it is! expresses the observation as an exclamation."),
+    ], [
+      written("Rewrite with the correct capitalisation and punctuation. on friday we visited the library in dhaka did you go there too", 4,
+        "On Friday we visited the library in Dhaka. Did you go there too?",
+        [["Capitals on On and Friday", 1], ["Capitals on Dhaka and Did", 1], ["Full stop after Dhaka", 1], ["Final question mark", 1]])
+    ]),
+    "Email and Composition": chapter([
+      mcq("Which subject line suits an email asking the head teacher for more time to submit a project?",
+        ["Hello", "Request for a project deadline extension", "My best friend", "Please open this"], 1,
+        "A formal subject line identifies the purpose of the message."),
+      mcq("Which is the best topic sentence for a paragraph on reducing waste at school?",
+        ["Waste is a word with five letters.", "I like drawing pictures.", "There was a shop near our gate.", "Students can reduce school waste by reusing materials and sorting rubbish."], 3,
+        "The sentence states the main idea and can be supported with examples."),
+      mcq("What should the ending of a short composition do?",
+        ["Close the main argument or idea coherently", "Introduce a new unrelated topic", "Repeat every sentence word for word", "Replace the introduction with a question"], 0,
+        "A good ending brings the composition's main idea together."),
+    ], [
+      written("Write a formal email to your head teacher requesting permission to organise a used-book exchange at school. Include the purpose, time and supervision.", 8,
+        "Subject: Permission to organise a used-book exchange\n\nDear Head Teacher,\n\nI am writing on behalf of Class 8 to request permission to hold a used-book exchange. It would help students find books they can use and pass on books in good condition. We propose using the library from 2:30 to 3:15 p.m. next Thursday. Our class teacher has agreed to supervise. We will sort the books and leave the room tidy.\n\nYours faithfully,\nTanvir\nClass 8",
+        [["Formal email format and tone", 2], ["Clear request, purpose, time and supervision", 4], ["Organisation and language", 2]])
+    ])
+  });
+})();
