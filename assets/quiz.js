@@ -19,14 +19,9 @@
   let active = false;
 
   if (modelTest) {
-    document.title = "মডেল টেস্ট | " + SITE.name;
-    get("quizHeroTitle").textContent = "মডেল টেস্ট";
+    document.title = "পরীক্ষার ধাঁচে অধ্যায়ভিত্তিক কুইজ | " + SITE.name;
+    get("quizHeroTitle").textContent = "পরীক্ষার ধাঁচে কুইজ";
     get("quizHeroIntro").textContent = "অধ্যায় বেছে পরীক্ষার মতো অনুশীলন করুন। সব প্রশ্ন শেষ হলে ফল, সঠিক উত্তর ও ব্যাখ্যা দেখবেন।";
-    for (const link of document.querySelectorAll("#mainNav a")) {
-      const url = new URL(link.href, location.href);
-      if (url.searchParams.get(window.PP_ROUTES ? "pp_mode" : "mode") === "model") link.setAttribute("aria-current", "page");
-      else if (link.textContent === "কুইজ") link.removeAttribute("aria-current");
-    }
   }
 
   function fillChapters(chapter) {

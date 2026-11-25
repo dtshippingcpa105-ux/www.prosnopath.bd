@@ -428,6 +428,11 @@
     byId("paperOverview").hidden = true;
     byId("paperScholarshipTitle").outerHTML = '<h1 id="paperScholarshipTitle">' + esc(title) + '</h1>';
     byId("paperScholarshipSummary").textContent = summary;
+    byId("paperReview").hidden = false;
+    const reviewLink = byId("paperFeedback");
+    function updateReviewLink() {
+      reviewLink.href = PB.feedbackHref(PB.href("paper-builder.html", { exam, view: keyMode ? "key" : "" }));
+    }
     if (model) selected = model.groups.flatMap((group) => group.items);
     keyMode = params.get("view") === "key";
     byId("paperOutput").hidden = false;
@@ -439,10 +444,12 @@
         if (keyMode) url.searchParams.set(view, "key");
         else url.searchParams.delete(view);
         history.replaceState(null, "", url);
+        updateReviewLink();
         renderPreview(marks);
       });
     }
     print.addEventListener("click", () => window.print());
+    updateReviewLink();
     renderPreview(marks);
     return;
   }

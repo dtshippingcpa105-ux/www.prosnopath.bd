@@ -49,12 +49,20 @@
   renderSubjects();
 
   const questions = entries.flatMap((entry) => [...entry.mcq, ...entry.short]);
+  const countSource = (source) => questions.filter((item) => PB.questionSource(item) === source).length;
   const stats = {
     questions: questions.length,
     subjects: new Set(entries.map((entry) => entry.subjectId)).size,
     resources: STUDY_CHAPTERS.length,
-    board: questions.filter((item) => PB.questionSource(item) === "board").length
+    board: countSource("board")
   };
+  PB.id("homeBoardQuestions").textContent = stats.board
+    ? PB.bn(stats.board) + "টি যাচাইকৃত বোর্ড প্রশ্ন আছে।"
+    : "যাচাইকৃত বোর্ড প্রশ্ন এখনো যোগ করা হয়নি।";
+  const nctbCount = countSource("nctb");
+  PB.id("homeNctbQuestions").textContent = nctbCount
+    ? PB.bn(nctbCount) + "টি এনসিটিবি প্রশ্ন দেখুন"
+    : "এনসিটিবি প্রশ্ন এখনো যোগ করা হয়নি";
   const statsBox = root.querySelector(".premium-stats");
   const counters = Object.entries(stats).map(([name, total]) => {
     const counter = statsBox.querySelector('[data-stat="' + name + '"]');

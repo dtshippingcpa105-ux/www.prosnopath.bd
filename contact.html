@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>মতামত ও যোগাযোগ | প্রশ্নপাঠ</title>
-  <meta name="description" content="ভুল উত্তর বা অকার্যকর বইয়ের লিংক চিহ্নিত করে একটি প্রতিবেদন প্রস্তুত করুন।">
+  <meta name="description" content="প্রশ্নে ভুল, অকার্যকর বইয়ের লিংক বা সাইটের সমস্যা প্রশ্নপাঠকে জানান।">
   <meta name="theme-color" content="#12306e">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta property="og:title" content="মতামত ও যোগাযোগ | প্রশ্নপাঠ">
@@ -34,8 +34,8 @@
         <a href="index.html#classes">শ্রেণি</a>
         <a href="index.html#subjects">বিষয়</a>
         <a href="question-bank.html">প্রশ্নব্যাংক</a>
-        <a href="quiz.html">কুইজ</a>
-        <a href="quiz.html?mode=model">মডেল টেস্ট</a>
+        <a href="quiz.html">অধ্যায়ভিত্তিক কুইজ</a>
+        <a href="scholarship.html#prep-models">বৃত্তি মডেল প্রশ্নপত্র</a>
         <a href="about.html">পরিচিতি</a>
         <details class="nav-more">
           <summary>আরও</summary>
@@ -62,19 +62,26 @@
       <div class="panel prose">
         <h2>প্রতিবেদনে কী রাখবেন</h2>
         <ul><li>প্রশ্নের ক্ষেত্রে শ্রেণি, বিষয়, অধ্যায় ও প্রশ্নটি উল্লেখ করুন।</li><li>বইয়ের ক্ষেত্রে বইয়ের নাম ও শিক্ষাবর্ষ লিখুন।</li><li>কোন পেজে সমস্যা হয়েছে, সম্ভব হলে তার লিংক দিন।</li></ul>
-        <p id="contactChannel">প্রকাশ্য যোগাযোগের ঠিকানা এখনো যোগ করা হয়নি। আপাতত খসড়া কপি বা ডাউনলোড করে সংরক্ষণ করতে পারেন।</p>
+        <p>খসড়া কপি করে <a href="https://github.com/dtshippingcpa105-ux/www.prosnopath.bd/issues/new">GitHub-এ প্রতিবেদন জমা দিন</a>। GitHub অ্যাকাউন্ট লাগবে এবং জমা দেওয়া লেখা সবার জন্য দৃশ্যমান হবে।</p>
+        <p id="contactChannel" hidden></p>
       </div>
       <form id="feedbackForm" class="panel feedback-form">
         <h2>প্রতিবেদন তৈরি করুন</h2>
-        <label>সমস্যার ধরন<select id="feedbackType"><option>প্রশ্ন বা উত্তরে ভুল</option><option>পাঠ্যবইয়ের লিংক কাজ করছে না</option><option>সাইট ব্যবহারে সমস্যা</option><option>অন্য মতামত</option></select></label>
-        <label>পেজের ঠিকানা (ঐচ্ছিক)<input type="text" id="feedbackUrl" maxlength="300"></label>
+        <label>সমস্যার ধরন<select id="feedbackType"><option value="content">প্রশ্ন, উত্তর বা নোটে ভুল</option><option value="book">পাঠ্যবইয়ের লিংক কাজ করছে না</option><option value="site">সাইট ব্যবহারে সমস্যা</option><option value="other">অন্য মতামত</option></select></label>
+        <label>পেজের ঠিকানা (ঐচ্ছিক)<input type="url" id="feedbackUrl" maxlength="1400"></label>
+        <p id="feedbackQuestion" class="muted" hidden></p>
         <label>সমস্যার বিবরণ<textarea id="feedbackText" rows="5" required maxlength="1500" placeholder="কী সমস্যা হয়েছে লিখুন"></textarea></label>
         <p class="muted">নাম, ফোন নম্বর বা অন্য ব্যক্তিগত তথ্য দেওয়ার দরকার নেই।</p>
         <button class="btn btn-primary" id="feedbackCreate" type="submit" disabled>খসড়া তৈরি করুন</button>
         <noscript><p class="status-box">এই অংশটি ব্যবহার করতে ব্রাউজারে জাভাস্ক্রিপ্ট চালু করুন।</p></noscript>
         <div id="feedbackDraft" hidden>
           <label>প্রতিবেদনের খসড়া<textarea id="feedbackPreview" rows="6" readonly></textarea></label>
-          <div class="actions"><button class="btn btn-secondary" type="button" id="feedbackCopy">কপি করুন</button><button class="btn btn-secondary" type="button" id="feedbackDownload">ডাউনলোড করুন</button><a class="btn btn-secondary" id="feedbackEmail" hidden>ইমেইল খুলুন</a></div>
+          <div class="actions">
+            <button class="btn btn-secondary" type="button" id="feedbackCopy">কপি করুন</button>
+            <a class="btn btn-primary" href="https://github.com/dtshippingcpa105-ux/www.prosnopath.bd/issues/new" id="feedbackIssue" target="_blank" rel="noopener noreferrer">GitHub-এ জমা দিন</a>
+            <a class="btn btn-secondary" id="feedbackEmail" hidden>ইমেইল খুলুন</a>
+            <button class="btn btn-secondary" type="button" id="feedbackDownload">ডাউনলোড করুন</button>
+          </div>
           <p class="muted" role="status" id="feedbackStatus"></p>
         </div>
       </form>
