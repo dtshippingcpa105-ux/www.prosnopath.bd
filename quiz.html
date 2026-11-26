@@ -22,6 +22,7 @@
   <script defer src="data.js"></script>
   <script defer src="science-eight-data.js"></script>
   <script defer src="math-eight-data.js"></script>
+  <script defer src="bgs-eight-data.js"></script>
   <script defer src="study-data.js"></script>
   <script defer src="assets/app.js"></script>
   <script defer src="assets/quiz.js"></script>
@@ -51,6 +52,8 @@
           </div>
         </details>
         <!-- proshnopath-account -->
+        <a class="nav-account" href="https://student-portal-production-b3ce231b.up.railway.app/student.html">আমার অগ্রগতি</a>
+        <!-- /proshnopath-account -->
       </nav>
     </div>
   </header>
@@ -66,6 +69,7 @@
     </section>
     <section class="section"><div class="wrap quiz-shell" id="quizWorkspace">
       <noscript><p class="status-box">এই অংশটি ব্যবহার করতে ব্রাউজারে জাভাস্ক্রিপ্ট চালু করুন।</p></noscript>
+      <p class="status-box" id="quizStudentStatus" role="status" hidden></p>
       <section id="quizPick">
         <form id="quizSetup" class="panel quiz-setup">
           <h2 id="quizPickTitle" tabindex="-1">কুইজ বেছে নিন</h2>
@@ -102,6 +106,7 @@
             <button class="btn btn-primary" id="quizRetry" type="button">আবার অনুশীলন করুন</button>
             <button class="btn btn-secondary" id="quizOther" type="button">অন্য কুইজ বেছে নিন</button>
             <a class="btn btn-secondary" id="quizScholarship" href="scholarship.html" hidden>বৃত্তি প্রস্তুতিতে যান</a>
+            <a class="btn btn-secondary" id="quizStudentResult" href="student.html" hidden>অগ্রগতিতে সংরক্ষিত ফল দেখুন</a>
           </div>
         </div>
         <div id="quizReview"></div>

@@ -1,0 +1,522 @@
+import { createHash, randomBytes, randomUUID, scrypt, timingSafeEqual } from "node:crypto";
+import { mkdir, readFile } from "node:fs/promises";
+import { dirname } from "node:path";
+import { DatabaseSync } from "node:sqlite";
+import { promisify } from "node:util";
+import { runInNewContext } from "node:vm";
+
+const deriveKey = promisify(scrypt);
+const firstQuizId = "plant-reproduction";
+const chapterQuizIds = [firstQuizId, "math8-profit", "atomic-structure-c8", "math8-patterns", "math8-measurement"];
+const modelId = "class8-model-1";
+const modelTitle = "বিজ্ঞান ও গণিত · মডেল টেস্ট ১";
+const modelMinutes = 10;
+const modelChapters = [
+  "growth-heredity", "plant-reproduction", "atomic-structure-c8",
+  "math8-patterns", "math8-profit", "math8-measurement"
+];
+const localCookie = "prosnopath_student";
+const sessionSeconds = 7 * 24 * 60 * 60;
+const maxBodyBytes = 4096;
+const uuid = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/;
+
+class RequestError extends Error {
+  constructor(status, message) {
+    super(message);
+    this.status = status;
+  }
+}
+
+function json(response, status, body, headers = {}) {
+  response.writeHead(status, {
+    "Content-Type": "application/json; charset=utf-8",
+    "Cache-Control": "no-store",
+    "X-Content-Type-Options": "nosniff",
+    ...headers
+  }).end(JSON.stringify(body));
+}
+
+async function readBody(request) {
+  if (!/^application\/json(?:\s*;|$)/i.test(request.headers["content-type"] || "")) {
+    throw new RequestError(415, "অনুরোধের ধরনটি গ্রহণযোগ্য নয়।");
+  }
+  const chunks = [];
+  let size = 0;
+  for await (const chunk of request.iterator({ destroyOnReturn: false })) {
+    size += chunk.length;
+    if (size > maxBodyBytes) {
+      request.resume();
+      throw new RequestError(413, "অনুরোধটি অনেক বড়।");
+    }
+    chunks.push(chunk);
+  }
+  try {
+    const body = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+    if (body && typeof body === "object" && !Array.isArray(body)) return body;
+  } catch {
+    // Show the same message for malformed JSON and a non-object body.
+  }
+  throw new RequestError(400, "অনুরোধটি পড়া যায়নি।");
+}
+
+function sha256(value) {
+  return createHash("sha256").update(value).digest();
+}
+
+function publicStudent(row) {
+  return { id: row.id, username: row.username, classId: "c8" };
+}
+
+function summary(row) {
+  return {
+    id: row.id, quizId: row.quiz_id, chapter: row.chapter, completedAt: row.completed_at, total: row.total,
+    correct: row.correct, wrong: row.total - row.correct - row.skipped, skipped: row.skipped
+  };
+}
+
+function modelBreakdown(questions) {
+  const subjects = new Map();
+  const chapters = new Map();
+  function count(groups, entry, question) {
+    if (!groups.has(entry.id)) groups.set(entry.id, { ...entry, total: 0, correct: 0, wrong: 0, skipped: 0 });
+    const group = groups.get(entry.id);
+    group.total++;
+    if (question.choice === null) group.skipped++;
+    else if (question.choice === question.answer) group.correct++;
+    else group.wrong++;
+  }
+  for (const question of questions) {
+    const { subjectId, subjectName, chapterId, chapterName } = question;
+    if (subjectId) count(subjects, { id: subjectId, name: subjectName }, question);
+    if (chapterId) count(chapters, { id: chapterId, name: chapterName, subjectName }, question);
+  }
+  return { subjects: [...subjects.values()], chapters: [...chapters.values()] };
+}
+
+export async function openStudentPilot({ contentRoot, dbPath, publicOrigin, inviteCode }) {
+  const hosted = publicOrigin ? new URL(publicOrigin) : null;
+  if (hosted && (hosted.protocol !== "https:" || hosted.origin !== publicOrigin
+    || !/^[A-Za-z0-9-]{16,64}$/.test(inviteCode || ""))) {
+    throw new Error("The hosted pilot needs an exact HTTPS origin and a 16–64-character invite code.");
+  }
+  const inviteHash = hosted ? sha256(inviteCode) : null;
+  const cookieName = hosted ? "__Host-" + localCookie : localCookie;
+
+  function sessionHash(request) {
+    const entry = request.headers.cookie?.split(";").map((part) => part.trim())
+      .find((part) => part.startsWith(cookieName + "="));
+    const token = entry?.slice(cookieName.length + 1);
+    return /^[a-f0-9]{64}$/.test(token || "") ? sha256(token).toString("hex") : "";
+  }
+
+  function sessionCookie(token, seconds) {
+    return cookieName + "=" + token + "; Path=/; HttpOnly; SameSite=Strict; Max-Age=" + seconds
+      + (hosted ? "; Secure" : "");
+  }
+
+  const sources = await Promise.all(["data.js", "science-eight-data.js", "math-eight-data.js"]
+    .map((file) => readFile(new URL(file, contentRoot), "utf8")));
+  const { chapters, subjects } = runInNewContext(sources.join("\n") + `
+    ({ chapters: [...CLASS_EIGHT_SCIENCE, ...CLASS_EIGHT_MATH], subjects: SUBJECTS });
+  `, {}, { filename: "student-pilot-content.js" });
+  const findChapter = (id) => chapters.find((item) => item.id === id && item.classId === "c8");
+  const chapterQuestions = (chapter) => chapter.mcq.map((item) =>
+    item.useFigure ? { ...item, figure: chapter.figure } : item);
+  const quizzes = new Map(chapterQuizIds.map((id) => {
+    const chapter = findChapter(id);
+    if (!chapter?.mcq.length) throw new Error("Student pilot quiz content is missing: " + id);
+    return [id, { ...chapter, mcq: chapterQuestions(chapter), subjectName: subjects[chapter.subjectId].name }];
+  }));
+  const modelQuestions = modelChapters.flatMap((id) => {
+    const chapter = findChapter(id);
+    if (!chapter || chapter.mcq.length < 2) throw new Error("Missing model test questions: " + id);
+    return chapterQuestions(chapter).slice(0, 2).map((item) => ({
+      ...item, subjectId: chapter.subjectId, subjectName: subjects[chapter.subjectId].name,
+      chapterId: chapter.id, chapterName: chapter.chapter
+    }));
+  });
+  const model = { title: modelTitle, minutes: modelMinutes, total: modelQuestions.length };
+
+  function review(row) {
+    const answers = JSON.parse(row.answers_json);
+    const questions = JSON.parse(row.questions_json).map((item, index) => {
+      const question = { ...item, choice: answers[index] };
+      if (row.quiz_id !== modelId || item.chapterId) return question;
+      // Older saved attempts have the question and options but no chapter IDs.
+      const match = modelQuestions.find((candidate) => candidate.subjectName === item.subjectName
+        && candidate.q === item.q && candidate.options.join("\0") === item.options.join("\0"));
+      if (!match) return question;
+      const { subjectId, chapterId, chapterName } = match;
+      return { ...question, subjectId, chapterId, chapterName };
+    });
+    return {
+      ...summary(row), questions,
+      ...(row.quiz_id === modelId ? { breakdown: modelBreakdown(questions) } : {})
+    };
+  }
+  await mkdir(dirname(dbPath), { recursive: true });
+  const db = new DatabaseSync(dbPath, { timeout: 5000 });
+  db.exec(`
+    PRAGMA foreign_keys = ON;
+    PRAGMA journal_mode = WAL;
+    CREATE TABLE IF NOT EXISTS students (
+      id TEXT PRIMARY KEY,
+      username TEXT NOT NULL UNIQUE,
+      salt TEXT NOT NULL,
+      password_hash TEXT NOT NULL
+    ) STRICT;
+    CREATE TABLE IF NOT EXISTS sessions (
+      token_hash TEXT PRIMARY KEY,
+      student_id TEXT NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+      expires_at INTEGER NOT NULL
+    ) STRICT;
+    CREATE TABLE IF NOT EXISTS quiz_attempts (
+      id TEXT PRIMARY KEY,
+      student_id TEXT NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+      quiz_id TEXT NOT NULL,
+      chapter TEXT NOT NULL,
+      started_at INTEGER NOT NULL,
+      completed_at INTEGER,
+      total INTEGER NOT NULL,
+      correct INTEGER,
+      skipped INTEGER,
+      questions_json TEXT NOT NULL,
+      answers_json TEXT
+    ) STRICT;
+    CREATE INDEX IF NOT EXISTS quiz_history ON quiz_attempts(student_id, completed_at DESC);
+    CREATE INDEX IF NOT EXISTS quiz_subject_history ON quiz_attempts(student_id, quiz_id, completed_at DESC);
+    CREATE TABLE IF NOT EXISTS active_model_tests (
+      student_id TEXT PRIMARY KEY REFERENCES students(id) ON DELETE CASCADE,
+      attempt_id TEXT NOT NULL UNIQUE REFERENCES quiz_attempts(id) ON DELETE CASCADE,
+      deadline INTEGER NOT NULL,
+      choices_json TEXT NOT NULL
+    ) STRICT;
+  `);
+  const sql = {
+    findStudent: db.prepare("SELECT * FROM students WHERE username = ?"),
+    addStudent: db.prepare("INSERT INTO students VALUES (?, ?, ?, ?) ON CONFLICT(username) DO NOTHING"),
+    findSession: db.prepare("SELECT students.id, username FROM students JOIN sessions ON students.id = sessions.student_id WHERE token_hash = ? AND expires_at > ?"),
+    addSession: db.prepare("INSERT INTO sessions VALUES (?, ?, ?)"),
+    endSession: db.prepare("DELETE FROM sessions WHERE token_hash = ?"),
+    clearExpiredSessions: db.prepare("DELETE FROM sessions WHERE expires_at <= ?"),
+    addAttempt: db.prepare("INSERT INTO quiz_attempts(id, student_id, quiz_id, chapter, started_at, total, questions_json) VALUES (?, ?, ?, ?, ?, ?, ?)"),
+    findAttempt: db.prepare("SELECT * FROM quiz_attempts WHERE id = ? AND student_id = ?"),
+    complete: db.prepare("UPDATE quiz_attempts SET completed_at = ?, correct = ?, skipped = ?, answers_json = ? WHERE id = ? AND student_id = ? AND completed_at IS NULL"),
+    history: db.prepare("SELECT id, quiz_id, chapter, completed_at, total, correct, skipped FROM quiz_attempts WHERE student_id = ? AND quiz_id = ? AND completed_at IS NOT NULL ORDER BY completed_at DESC, rowid DESC LIMIT 20"),
+    stats: db.prepare("SELECT count(*) AS attempts, max(1.0 * correct / total) AS best FROM quiz_attempts WHERE student_id = ? AND quiz_id = ? AND completed_at IS NOT NULL"),
+    activeModel: db.prepare("SELECT quiz_attempts.*, deadline, choices_json FROM active_model_tests JOIN quiz_attempts ON quiz_attempts.id = attempt_id WHERE active_model_tests.student_id = ?"),
+    addModel: db.prepare("INSERT INTO active_model_tests VALUES (?, ?, ?, ?)"),
+    saveChoice: db.prepare("UPDATE active_model_tests SET choices_json = ? WHERE student_id = ?"),
+    endModel: db.prepare("DELETE FROM active_model_tests WHERE student_id = ?"),
+    completedAll: db.prepare("SELECT quiz_id, chapter, started_at, completed_at, total, correct, skipped, questions_json, answers_json FROM quiz_attempts WHERE student_id = ? AND completed_at IS NOT NULL ORDER BY completed_at ASC, rowid ASC LIMIT 1000")
+  };
+
+  // ড্যাশবোর্ডের সারাংশ: দিনভিত্তিক হিসাব (বাংলাদেশ সময়), ধারাবাহিকতা, পয়েন্ট ও ভুলের খাতা।
+  const dayMs = 86_400_000;
+  const dhakaDay = (ts) => new Date(ts + 6 * 3_600_000).toISOString().slice(0, 10);
+  const maxStudyMs = 60 * 60_000; // ফেলে রাখা কুইজ যেন পড়ার সময় ফুলিয়ে না দেয়
+  function overview(studentId, now) {
+    const rows = sql.completedAll.all(studentId);
+    const days = new Map();
+    for (let i = 29; i >= 0; i -= 1) {
+      days.set(dhakaDay(now - i * dayMs), { date: dhakaDay(now - i * dayMs), quizzes: 0, correct: 0, wrong: 0, skipped: 0, seconds: 0 });
+    }
+    const active = new Set();
+    const mistakes = new Map();
+    let totalCorrect = 0;
+    for (const row of rows) {
+      const day = dhakaDay(row.completed_at);
+      active.add(day);
+      totalCorrect += row.correct;
+      const bucket = days.get(day);
+      if (bucket) {
+        bucket.quizzes += 1;
+        bucket.correct += row.correct;
+        bucket.skipped += row.skipped;
+        bucket.wrong += row.total - row.correct - row.skipped;
+        bucket.seconds += Math.round(Math.min(Math.max(row.completed_at - row.started_at, 0), maxStudyMs) / 1000);
+      }
+      let items;
+      let answers;
+      try {
+        items = JSON.parse(row.questions_json);
+        answers = JSON.parse(row.answers_json);
+      } catch {
+        continue;
+      }
+      items.forEach((item, index) => {
+        const key = row.quiz_id + "\0" + item.q;
+        const choice = answers[index] ?? null;
+        if (choice === item.answer) {
+          mistakes.delete(key); // পরে সঠিক হলে খাতা থেকে বাদ
+          return;
+        }
+        const previous = mistakes.get(key);
+        mistakes.delete(key);
+        mistakes.set(key, {
+          q: item.q, options: item.options, answer: item.answer, explain: item.explain, figure: item.figure, choice,
+          quizId: row.quiz_id === modelId ? (item.chapterId ?? null) : row.quiz_id,
+          chapter: item.chapterName ?? row.chapter,
+          subjectName: item.subjectName ?? quizzes.get(row.quiz_id)?.subjectName ?? "",
+          misses: (previous?.misses ?? 0) + 1, lastSeen: row.completed_at
+        });
+      });
+    }
+    const today = dhakaDay(now);
+    let cursor = active.has(today) ? now : now - dayMs;
+    let streak = 0;
+    while (active.has(dhakaDay(cursor))) {
+      streak += 1;
+      cursor -= dayMs;
+    }
+    let best = 0;
+    let run = 0;
+    let previousDay = null;
+    for (const day of [...active].sort()) {
+      run = previousDay && Date.parse(day) - Date.parse(previousDay) === dayMs ? run + 1 : 1;
+      best = Math.max(best, run);
+      previousDay = day;
+    }
+    return {
+      today, days: [...days.values()], streak, bestStreak: best, practicedToday: active.has(today),
+      xp: totalCorrect * 10 + rows.length * 5, totalQuizzes: rows.length,
+      mistakeCount: mistakes.size, mistakes: [...mistakes.values()].reverse().slice(0, 60)
+    };
+  }
+
+  function modelTransaction(action) {
+    db.exec("BEGIN IMMEDIATE");
+    try {
+      const result = action(Date.now());
+      db.exec("COMMIT");
+      return result;
+    } catch (error) {
+      db.exec("ROLLBACK");
+      throw error;
+    }
+  }
+
+  function scoreAttempt(row, items, answers, at) {
+    const correct = items.filter((item, index) => item.answer === answers[index]).length;
+    const skipped = answers.filter((answer) => answer === null).length;
+    sql.complete.run(at, correct, skipped, JSON.stringify(answers), row.id, row.student_id);
+    return sql.findAttempt.get(row.id, row.student_id);
+  }
+
+  function finishModel(row, at) {
+    const completed = scoreAttempt(row, JSON.parse(row.questions_json), JSON.parse(row.choices_json), at);
+    sql.endModel.run(row.student_id);
+    return completed;
+  }
+
+  function modelState(row, now) {
+    if (!row) return null;
+    return {
+      id: row.id, deadline: row.deadline, serverNow: now, choices: JSON.parse(row.choices_json),
+      questions: JSON.parse(row.questions_json).map(({ q, options, figure, subjectName }) => ({
+        q, options, figure, subjectName
+      }))
+    };
+  }
+
+  async function handleModel(request, response, path, studentId) {
+    const method = request.method;
+    const body = method === "POST" ? await readBody(request) : {};
+    const { status, data } = modelTransaction((now) => {
+      let active = sql.activeModel.get(studentId);
+      if (active && now >= active.deadline) {
+        finishModel(active, active.deadline);
+        active = null;
+      }
+
+      if (path === "/model-test") {
+        if (method === "GET") {
+          const [latest] = sql.history.all(studentId, modelId);
+          return { status: 200, data: { model, active: modelState(active, now), latest: latest ? summary(latest) : null } };
+        }
+        if (active) return { status: 200, data: { active: modelState(active, now) } };
+        const id = randomUUID();
+        sql.addAttempt.run(id, studentId, modelId, modelTitle, now, model.total, JSON.stringify(modelQuestions));
+        sql.addModel.run(studentId, id, now + model.minutes * 60_000, JSON.stringify(Array(model.total).fill(null)));
+        return { status: 201, data: { active: modelState(sql.activeModel.get(studentId), now) } };
+      }
+
+      const row = typeof body.id === "string" && uuid.test(body.id) ? sql.findAttempt.get(body.id, studentId) : null;
+      if (row?.quiz_id !== modelId) {
+        throw new RequestError(404, "মডেল টেস্টের এই চেষ্টা পাওয়া যায়নি।");
+      }
+      if (row.completed_at) return { status: 200, data: { attempt: review(row) } };
+      if (path === "/model-test/finish") return { status: 200, data: { attempt: review(finishModel(active, now)) } };
+      const { index, choice } = body;
+      const items = JSON.parse(active.questions_json);
+      if (!Number.isInteger(index) || index < 0 || index >= items.length ||
+          (choice !== null && (!Number.isInteger(choice) || choice < 0 || choice >= items[index].options.length))) {
+        throw new RequestError(400, "প্রশ্নটির জন্য একটি বৈধ উত্তর বেছে নিন।");
+      }
+      const choices = JSON.parse(active.choices_json);
+      choices[index] = choice;
+      sql.saveChoice.run(JSON.stringify(choices), studentId);
+      return { status: 200, data: { choices } };
+    });
+    return json(response, status, data);
+  }
+  let authAttempts = 0;
+  let rateWindow = 0;
+  const dummySalt = randomBytes(16).toString("hex");
+  const dummyHash = Buffer.alloc(64);
+
+  function signIn(request, response, student, status) {
+    const token = randomBytes(32).toString("hex");
+    const now = Date.now();
+    sql.clearExpiredSessions.run(now);
+    sql.addSession.run(sha256(token).toString("hex"), student.id, now + sessionSeconds * 1000);
+    sql.endSession.run(sessionHash(request));
+    json(response, status, { student: publicStudent(student) }, { "Set-Cookie": sessionCookie(token, sessionSeconds) });
+  }
+
+  async function authenticate(request, response, register) {
+    const now = Date.now();
+    if (now >= rateWindow) {
+      rateWindow = now + 60_000;
+      authAttempts = 0;
+    }
+    if (++authAttempts > 25) throw new RequestError(429, "অনেকবার চেষ্টা হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।");
+    const body = await readBody(request);
+    const username = typeof body.username === "string" ? body.username.trim().toLowerCase() : "";
+    const password = typeof body.password === "string" ? body.password : "";
+    if (!/^[a-z][a-z0-9-]{3,23}$/.test(username) || password.length < 10 || Buffer.byteLength(password) > 256) {
+      throw new RequestError(400, "আইডি ৪–২৪ অক্ষরের হবে এবং পাসওয়ার্ড অন্তত ১০ অক্ষরের হবে।");
+    }
+    if (register) {
+      const suppliedInvite = typeof body.invite === "string" ? body.invite.trim() : "";
+      if (inviteHash && !timingSafeEqual(sha256(suppliedInvite), inviteHash)) {
+        throw new RequestError(403, "পরীক্ষামূলক আইডি খুলতে সঠিক আমন্ত্রণ কোড দিন।");
+      }
+      const id = randomUUID();
+      const salt = randomBytes(16).toString("hex");
+      const hash = await deriveKey(password, salt, 64);
+      if (!sql.addStudent.run(id, username, salt, hash.toString("hex")).changes) {
+        throw new RequestError(409, "এই আইডিটি ব্যবহৃত হচ্ছে। অন্য একটি আইডি বেছে নিন।");
+      }
+      return signIn(request, response, { id, username }, 201);
+    }
+    const student = sql.findStudent.get(username);
+    const candidate = await deriveKey(password, student?.salt ?? dummySalt, 64);
+    const matches = timingSafeEqual(candidate, student ? Buffer.from(student.password_hash, "hex") : dummyHash);
+    if (!student || !matches) throw new RequestError(401, "আইডি বা পাসওয়ার্ড মেলেনি।");
+    signIn(request, response, student, 200);
+  }
+
+  async function handle(request, response, path) {
+    const host = request.headers.host;
+    const validHost = hosted ? host === hosted.host : /^(?:127\.0\.0\.1|localhost)(?::[0-9]+)?$/i.test(host || "");
+    if (!validHost) {
+      throw new RequestError(403, "শিক্ষার্থী পাইলটের নির্ধারিত ঠিকানা থেকে খুলুন।");
+    }
+    const method = request.method;
+    if (method !== "GET" && method !== "POST") throw new RequestError(405, "অনুরোধের পদ্ধতি গ্রহণযোগ্য নয়।");
+    if (method === "POST" && request.headers.origin !== (hosted?.origin || "http://" + host)) {
+      throw new RequestError(403, "একই সাইট থেকে আবার চেষ্টা করুন।");
+    }
+
+    if (method === "POST" && path === "/register") return authenticate(request, response, true);
+    if (method === "POST" && path === "/login") return authenticate(request, response, false);
+    const tokenHash = sessionHash(request);
+    const student = tokenHash && sql.findSession.get(tokenHash, Date.now());
+    if (method === "GET" && path === "/session") {
+      return json(response, 200, { student: student ? publicStudent(student) : null, inviteRequired: !!inviteHash });
+    }
+    if (method === "POST" && path === "/logout") {
+      sql.endSession.run(tokenHash);
+      return json(response, 200, {}, { "Set-Cookie": sessionCookie("", 0) });
+    }
+    if (!student) throw new RequestError(401, "এই অংশটি দেখতে শিক্ষার্থী আইডিতে ঢুকুন।");
+
+    if (path === "/model-test" || (method === "POST" && ["/model-test/answer", "/model-test/finish"].includes(path))) {
+      return handleModel(request, response, path, student.id);
+    }
+    if (method === "GET" && path === "/dashboard") {
+      const chapterQuizzes = [...quizzes.values()].map(({ id, subjectId, subjectName, chapter, mcq }) => {
+        const stats = sql.stats.get(student.id, id);
+        return {
+          quizId: id, subjectId, subjectName, chapter, questionCount: mcq.length,
+          attempts: sql.history.all(student.id, id).map(summary),
+          attemptCount: stats.attempts, best: stats.best
+        };
+      });
+      // Keep the earlier dashboard fields for clients with cached scripts.
+      const subjects = chapterQuizzes.slice(0, 2);
+      const { attempts, attemptCount, best } = subjects[0];
+      const modelTest = modelTransaction((now) => {
+        const active = sql.activeModel.get(student.id);
+        const isActive = !!active && now < active.deadline;
+        if (active && !isActive) finishModel(active, active.deadline);
+        const stats = sql.stats.get(student.id, modelId);
+        return {
+          ...model, isActive, attemptCount: stats.attempts, best: stats.best,
+          attempts: sql.history.all(student.id, modelId).map(summary)
+        };
+      });
+      const summaryData = overview(student.id, Date.now());
+      return json(response, 200, { student: publicStudent(student), subjects, chapterQuizzes, attempts, attemptCount, best, modelTest, overview: summaryData });
+    }
+    if (method === "POST" && path === "/attempts") {
+      const { quiz } = await readBody(request);
+      const selectedQuiz = quizzes.get(quiz);
+      if (!selectedQuiz) throw new RequestError(404, "পাইলট কুইজটি পাওয়া যায়নি।");
+      const id = randomUUID();
+      const { mcq, chapter } = selectedQuiz;
+      sql.addAttempt.run(id, student.id, quiz, chapter, Date.now(), mcq.length, JSON.stringify(mcq));
+      return json(response, 201, { id, questions: mcq.map(({ q, options, figure }) => ({ q, options, figure })) });
+    }
+
+    const attemptId = path.split("/").at(-1);
+    if (!uuid.test(attemptId) || path !== "/attempts/" + attemptId) {
+      throw new RequestError(404, "পাতাটি পাওয়া যায়নি।");
+    }
+    const findAttempt = () => sql.findAttempt.get(attemptId, student.id);
+    if (method === "GET") {
+      let row = findAttempt();
+      if (row?.quiz_id === modelId && !row.completed_at) {
+        row = modelTransaction((now) => {
+          const active = sql.activeModel.get(student.id);
+          return active?.id === attemptId && now >= active.deadline ? finishModel(active, active.deadline) : findAttempt();
+        });
+      }
+      if (!row?.completed_at) throw new RequestError(404, "সংরক্ষিত ফলটি পাওয়া যায়নি।");
+      return json(response, 200, { attempt: review(row) });
+    }
+
+    const { answers } = await readBody(request);
+    const row = findAttempt();
+    if (!row) throw new RequestError(404, "কুইজের এই চেষ্টা পাওয়া যায়নি।");
+    if (row.quiz_id === modelId) throw new RequestError(400, "মডেল টেস্ট পেজ থেকে উত্তর জমা দিন।");
+    const items = JSON.parse(row.questions_json);
+    if (!Array.isArray(answers) || answers.length !== items.length || answers.some((choice, index) =>
+      choice !== null && (!Number.isInteger(choice) || choice < 0 || choice >= items[index].options.length))) {
+      throw new RequestError(400, "প্রতিটি প্রশ্নের জন্য একটি উত্তর বা বাদ দেওয়ার তথ্য দিন।");
+    }
+    const saved = JSON.stringify(answers);
+    if (row.completed_at) {
+      if (row.answers_json !== saved) throw new RequestError(409, "এই ফলটি আগেই জমা হয়েছে।");
+      return json(response, 200, { attempt: review(row) });
+    }
+    const completed = scoreAttempt(row, items, answers, Date.now());
+    if (completed.answers_json !== saved) throw new RequestError(409, "এই ফলটি আগেই জমা হয়েছে।");
+    return json(response, 200, { attempt: review(completed) });
+  }
+
+  return {
+    quizIds: [...quizzes.keys()],
+    quizCounts: [...quizzes.values()].map(({ mcq }) => mcq.length),
+    close() { db.close(); },
+    async serve(request, response, path) {
+      try {
+        await handle(request, response, path);
+      } catch (error) {
+        if (!(error instanceof RequestError)) console.error("Student pilot request failed", error);
+        json(response, error.status || 500, { error: error.status ? error.message : "সার্ভারে সমস্যা হয়েছে। আবার চেষ্টা করুন।" });
+      }
+    }
+  };
+}

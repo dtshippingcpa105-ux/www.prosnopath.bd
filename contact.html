@@ -48,13 +48,15 @@
           </div>
         </details>
         <!-- proshnopath-account -->
+        <a class="nav-account" href="https://student-portal-production-b3ce231b.up.railway.app/student.html">আমার অগ্রগতি</a>
+        <!-- /proshnopath-account -->
       </nav>
     </div>
   </header>
   <main id="main" tabindex="-1" class="theme-page theme-contact">
     <section class="page-hero themed-hero">
       <div class="wrap themed-hero-grid">
-        <div class="themed-hero-copy"><h1>মতামত ও যোগাযোগ</h1><p>কোনো প্রশ্নের উত্তর, বইয়ের লিংক বা ব্যবহারপ্রবাহে সমস্যা পেলে সেটি লিখে রাখুন। পেজের লিংক দিলে সমস্যাটি খুঁজে পাওয়া সহজ হয়।</p><div class="actions"><a class="btn btn-primary" href="#feedbackForm">প্রতিবেদন লিখুন</a></div></div>
+        <div class="themed-hero-copy"><h1>মতামত ও যোগাযোগ</h1><p>কোনো প্রশ্নের উত্তর, বইয়ের লিংক বা ব্যবহারপ্রবাহে সমস্যা পেলে সেটি লিখে রাখুন। পেজের লিংক দিলে সমস্যাটি খুঁজে পাওয়া সহজ হয়।</p><div class="actions"><a class="btn btn-primary" href="#feedbackForm">বার্তা লিখুন</a></div></div>
         <div class="hero-scene contact-scene"><div class="sample-card contact-slip"><p class="scene-label">প্রতিবেদনে যা লিখবেন</p><ol><li>পেজ বা প্রশ্নের ঠিকানা</li><li>কী সমস্যা দেখেছেন</li><li>সঠিক তথ্য বা প্রস্তাব</li></ol></div></div>
       </div>
     </section>
@@ -62,25 +64,27 @@
       <div class="panel prose">
         <h2>প্রতিবেদনে কী রাখবেন</h2>
         <ul><li>প্রশ্নের ক্ষেত্রে শ্রেণি, বিষয়, অধ্যায় ও প্রশ্নটি উল্লেখ করুন।</li><li>বইয়ের ক্ষেত্রে বইয়ের নাম ও শিক্ষাবর্ষ লিখুন।</li><li>কোন পেজে সমস্যা হয়েছে, সম্ভব হলে তার লিংক দিন।</li></ul>
-        <p>খসড়া কপি করে <a href="https://github.com/dtshippingcpa105-ux/www.prosnopath.bd/issues/new">GitHub-এ প্রতিবেদন জমা দিন</a>। GitHub অ্যাকাউন্ট লাগবে এবং জমা দেওয়া লেখা সবার জন্য দৃশ্যমান হবে।</p>
-        <p id="contactChannel" hidden></p>
+        <h2>কীভাবে পাঠাবেন</h2>
+        <ol class="contact-steps"><li>ডান পাশের ফর্মে সমস্যার ধরন ও বিবরণ লিখুন।</li><li>“বার্তা তৈরি করুন” চাপুন।</li><li>WhatsApp বা Google Form বেছে নিয়ে পাঠিয়ে দিন। কোনো অ্যাকাউন্ট খুলতে হবে না।</li></ol>
+        <div class="contact-channels" id="contactChannel" hidden></div>
+        <p class="status-box" id="contactMissing" hidden>যোগাযোগের মাধ্যম শিগগিরই যোগ করা হবে। আপাতত বার্তাটি কপি করে রাখুন।</p>
       </div>
       <form id="feedbackForm" class="panel feedback-form">
-        <h2>প্রতিবেদন তৈরি করুন</h2>
+        <h2>বার্তা লিখুন</h2>
         <label>সমস্যার ধরন<select id="feedbackType"><option value="content">প্রশ্ন, উত্তর বা নোটে ভুল</option><option value="book">পাঠ্যবইয়ের লিংক কাজ করছে না</option><option value="site">সাইট ব্যবহারে সমস্যা</option><option value="other">অন্য মতামত</option></select></label>
         <label>পেজের ঠিকানা (ঐচ্ছিক)<input type="url" id="feedbackUrl" maxlength="1400"></label>
         <p id="feedbackQuestion" class="muted" hidden></p>
         <label>সমস্যার বিবরণ<textarea id="feedbackText" rows="5" required maxlength="1500" placeholder="কী সমস্যা হয়েছে লিখুন"></textarea></label>
         <p class="muted">নাম, ফোন নম্বর বা অন্য ব্যক্তিগত তথ্য দেওয়ার দরকার নেই।</p>
-        <button class="btn btn-primary" id="feedbackCreate" type="submit" disabled>খসড়া তৈরি করুন</button>
+        <button class="btn btn-primary" id="feedbackCreate" type="submit" disabled>বার্তা তৈরি করুন</button>
         <noscript><p class="status-box">এই অংশটি ব্যবহার করতে ব্রাউজারে জাভাস্ক্রিপ্ট চালু করুন।</p></noscript>
         <div id="feedbackDraft" hidden>
-          <label>প্রতিবেদনের খসড়া<textarea id="feedbackPreview" rows="6" readonly></textarea></label>
-          <div class="actions">
+          <label>আপনার বার্তা<textarea id="feedbackPreview" rows="6" readonly></textarea></label>
+          <div class="actions feedback-send">
+            <a class="btn btn-whatsapp" id="feedbackWhatsapp" target="_blank" rel="noopener noreferrer" hidden>WhatsApp-এ পাঠান</a>
+            <a class="btn btn-gform" id="feedbackGform" target="_blank" rel="noopener noreferrer" hidden>Google Form-এ পাঠান</a>
+            <a class="btn btn-secondary" id="feedbackEmail" hidden>ইমেইলে পাঠান</a>
             <button class="btn btn-secondary" type="button" id="feedbackCopy">কপি করুন</button>
-            <a class="btn btn-primary" href="https://github.com/dtshippingcpa105-ux/www.prosnopath.bd/issues/new" id="feedbackIssue" target="_blank" rel="noopener noreferrer">GitHub-এ জমা দিন</a>
-            <a class="btn btn-secondary" id="feedbackEmail" hidden>ইমেইল খুলুন</a>
-            <button class="btn btn-secondary" type="button" id="feedbackDownload">ডাউনলোড করুন</button>
           </div>
           <p class="muted" role="status" id="feedbackStatus"></p>
         </div>

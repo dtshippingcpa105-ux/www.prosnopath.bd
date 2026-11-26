@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /student.html
+Disallow: /student-model.html
+Disallow: /api/
+
+# ডোমেইন ঠিক হলে `node make-sitemap.mjs https://আপনার-ডোমেইন` চালান; তখন নিচের লাইনটি নিজে থেকে যোগ হবে।

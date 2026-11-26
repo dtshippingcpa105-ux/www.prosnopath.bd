@@ -4,7 +4,11 @@ const SITE = {
   "name": "প্রশ্নপাঠ",
   "tagline": "Learn Practice Grow",
   "slogan": "প্রশ্ন থেকেই শুরু হোক শেখার নতুন পথ",
-  "email": ""
+  "email": "",
+  // মতামতের জন্য WhatsApp নম্বর: দেশের কোডসহ শুধু অঙ্ক, যেমন "8801712345678"। খালি রাখলে বোতাম দেখাবে না।
+  "whatsapp": "",
+  // Google Form-এর শেয়ার লিংক, যেমন "https://forms.gle/xxxx"। খালি রাখলে বোতাম দেখাবে না।
+  "feedbackForm": ""
 };
 
 const CLASSES = [

@@ -50,6 +50,36 @@ const PB = {
     return this.href("contact.html", { page: url.href, type, question: question.slice(0, 250) }) + "#feedbackForm";
   },
 
+  async studentRequest(path, body, signal) {
+    const response = await fetch("/api/student" + path, body === undefined ? { signal } : {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      signal
+    }).catch(() => {
+      throw new Error("শিক্ষার্থী সার্ভারের সঙ্গে যোগাযোগ হয়নি। সংযোগ দেখে আবার চেষ্টা করুন।");
+    });
+    const type = response.headers.get("Content-Type");
+    const data = type?.startsWith("application/json") ? await response.json() : null;
+    if (!response.ok || !data) {
+      const error = new Error(data?.error || "লোকাল শিক্ষার্থী সার্ভারের সঙ্গে যোগাযোগ হয়নি।");
+      error.status = response.status;
+      throw error;
+    }
+    return data;
+  },
+
+  quizReview(items) {
+    return items.map(({ q, options, answer, explain, figure, choice, position }, index) => {
+      const tag = choice === null ? "বাদ" : choice === answer ? "সঠিক" : "ভুল";
+      return '<details class="panel review"><summary>' + this.bn(position ?? index + 1) + '. ' + this.escape(q)
+        + ' <span class="review-tag">(' + tag + ')</span></summary>' + this.figure(figure)
+        + '<p>আপনার উত্তর — ' + (choice === null ? "উত্তর দেওয়া হয়নি" : this.escape(options[choice]))
+        + '</p><p>সঠিক উত্তর — ' + this.escape(options[answer]) + '</p><p>'
+        + this.escape(explain) + '</p></details>';
+    }).join("");
+  },
+
   classById(id) {
     return CLASSES.find((entry) => entry.id === id);
   },
@@ -96,7 +126,7 @@ const PB = {
       const { classId, subjectId, chapter, id, mcq, short, figure } = note;
       const key = [classId, subjectId, chapter].join("|");
       const existing = entries.get(key);
-      entries.set(key, { classId, subjectId, chapter, noteId: id,
+      entries.set(key, { ...existing, classId, subjectId, chapter, noteId: id,
         mcq: [...(existing?.mcq ?? []), ...mcq.map((item) => item.useFigure ? { ...item, figure } : item)],
         short: [...(existing?.short ?? []), ...short] });
     }

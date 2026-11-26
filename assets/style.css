@@ -411,3 +411,19 @@ progress::-webkit-progress-value { background: var(--blue); }
   .printed-essay-title, .printed-passage h5, .printed-passage, .printed-word-bank { break-after: avoid; }
   .printed-items > li > p + p { margin-top: .2rem; }
 }
+
+/* মতামত: WhatsApp ও Google Form */
+.contact-steps { padding-inline-start: 1.3rem; }
+.contact-steps li + li { margin-top: .3rem; }
+.contact-channels { display: grid; gap: .6rem; margin-top: 1rem; }
+.contact-channel { display: flex; align-items: center; gap: .6rem; min-height: 48px; padding: .55rem .9rem; border: 1px solid var(--line); border-left: 5px solid var(--blue); border-radius: 12px; background: #f8fafc; color: var(--ink); font-weight: 700; text-decoration: none; overflow-wrap: anywhere; }
+.contact-channel::before { content: ""; flex: none; width: .7rem; height: .7rem; border-radius: 50%; background: currentColor; opacity: .85; }
+.contact-channel:hover, .contact-channel:focus-visible { background: #fff; box-shadow: var(--shadow); }
+.channel-whatsapp { border-left-color: #25d366; color: #0f7a3d; }
+.channel-gform { border-left-color: #7248b9; color: #5b3496; }
+.channel-email { border-left-color: var(--blue); color: var(--blue); }
+.feedback-send .btn { min-height: 46px; }
+.btn-whatsapp { background: #1fa855; border-color: #1fa855; color: #fff; }
+.btn-whatsapp:hover, .btn-whatsapp:focus-visible { background: #178a45; border-color: #178a45; color: #fff; }
+.btn-gform { background: #6a3fb5; border-color: #6a3fb5; color: #fff; }
+.btn-gform:hover, .btn-gform:focus-visible { background: #57319a; border-color: #57319a; color: #fff; }

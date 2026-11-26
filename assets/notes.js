@@ -11,7 +11,7 @@
   const subjects = [...new Set(catalog.map((note) => note.subjectId))];
   const requestedNote = params.get("note");
   const current = STUDY_CHAPTERS.find((note) => note.id === requestedNote);
-  const scholarshipSubjects = ["science", "math"];
+  const scholarshipSubjects = ["science", "math", "bgs"];
   const scholarship = (subject) => PB.href("paper-builder.html", { exam: subject + "-britti-1" });
 
   function subjectName(note) {
@@ -62,6 +62,7 @@
     detail.hidden = false;
     document.title = current.chapter + " — অধ্যায়ভিত্তিক নোট | " + SITE.name;
     const selection = { class: current.classId, subject: current.subjectId, chapter: current.chapter };
+    const savedQuiz = PB.id("studentNavLink")?.dataset.quizzes?.split(",").includes(current.id);
     const book = STUDY_CHAPTERS.filter((note) => note.classId === current.classId && note.subjectId === current.subjectId && note.number);
     const chapterIndex = book.indexOf(current);
     const neighbors = chapterIndex >= 0 ? [[book[chapterIndex - 1], "আগের অধ্যায়"], [book[chapterIndex + 1], "পরের অধ্যায়"]]
@@ -85,6 +86,8 @@
       + '<section class="note-section"><h2>এ ভুলটি এড়ান</h2><p>' + escape(current.commonMistake) + '</p></section>'
       + '<div class="actions"><a class="btn btn-primary" href="' + escape(PB.href("question-bank.html", selection)) + '">অনুশীলনী ও সমাধান</a>'
       + '<a class="btn btn-secondary" href="' + escape(PB.href("quiz.html", selection)) + '">কুইজ দিন</a>'
+      + (savedQuiz ? '<a class="btn btn-secondary" href="'
+        + escape(PB.href("quiz.html", { student: current.id }) + "#quizWorkspace") + '">আইডিতে ফল সেভ করে কুইজ দিন</a>' : '')
       + '<a class="btn btn-secondary" href="' + escape(PB.href("paper-builder.html", selection)) + '">এই অধ্যায়ের প্রশ্নপত্র</a></div>'
       + nextLinks
       + '<p class="source-extra"><a href="' + escape(notesUrl) + '">সব নোট</a>'

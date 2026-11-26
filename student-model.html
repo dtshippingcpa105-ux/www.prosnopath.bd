@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>মডেল টেস্ট | প্রশ্নপাঠ</title>
+  <meta name="description" content="অধ্যায়ভিত্তিক মডেল টেস্ট দিয়ে নিজের প্রস্তুতি যাচাই করুন।">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="assets/favicon.png" type="image/png" sizes="64x64">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&amp;family=Noto+Serif+Bengali:wght@700;800&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/student.css">
+  <script defer src="assets/app.js"></script>
+  <script defer src="assets/student-report.js"></script>
+  <script defer src="assets/student-model.js"></script>
+</head>
+<body>
+  <main class="student-main" id="main">
+    <div class="wrap student-wrap">
+      <header class="student-heading">
+        <a class="model-back" href="student.html">আমার অগ্রগতিতে ফিরুন</a>
+        <p class="student-class">অষ্টম শ্রেণি</p>
+        <h1>সময়বদ্ধ মডেল টেস্ট</h1>
+        <p id="modelInfo"></p>
+      </header>
+      <p class="status-box" id="modelStatus" role="status">মডেল টেস্ট লোড হচ্ছে…</p>
+      <button class="btn btn-secondary" id="modelLoadRetry" type="button" hidden>আবার লোড করুন</button>
+      <noscript><p class="status-box">মডেল টেস্ট ব্যবহার করতে জাভাস্ক্রিপ্ট চালু করুন।</p></noscript>
+      <section class="panel student-card" id="modelSetup" aria-labelledby="modelSetupTitle" hidden>
+        <h2 id="modelSetupTitle">শুরুর আগে</h2>
+        <ul class="model-rules">
+          <li>সব প্রশ্নের জন্য একটিই সময়সীমা। সময় শেষ হলে সংরক্ষিত উত্তর জমা হবে।</li>
+          <li>যে কোনো প্রশ্নে ফিরে উত্তর বদলাতে পারবেন। প্রতিটি উত্তর সঙ্গে সঙ্গে সংরক্ষিত হয়।</li>
+          <li>পেজ বন্ধ করলেও সময় চলবে। সংযোগ ফিরে এলে একই টেস্টে ফিরতে পারবেন।</li>
+        </ul>
+        <div class="actions">
+          <button class="btn btn-primary" id="modelStart" type="button">টেস্ট শুরু করুন</button>
+          <a id="modelLatest" hidden>সর্বশেষ ফল দেখুন</a>
+        </div>
+      </section>
+      <section id="modelRun" aria-labelledby="modelQuestion" hidden>
+        <div class="panel student-card model-controls">
+          <div class="model-progress">
+            <p id="modelAnswered"></p>
+            <p class="quiz-timer" id="modelTimer" role="timer" aria-live="off"></p>
+          </div>
+          <div class="model-pages" id="modelPages" role="group" aria-label="প্রশ্নের তালিকা"></div>
+        </div>
+        <div class="panel student-card model-question">
+          <p class="student-class" id="modelPosition"></p>
+          <h2 id="modelQuestion" tabindex="-1"></h2>
+          <div id="modelFigure"></div>
+          <div class="q-options" id="modelOptions" role="group" aria-labelledby="modelQuestion"></div>
+          <p class="muted model-save" id="modelSaveStatus" role="status"></p>
+          <div class="actions">
+            <button class="btn btn-secondary" id="modelPrevious" type="button">আগের প্রশ্ন</button>
+            <button class="btn btn-secondary" id="modelNext" type="button">পরের প্রশ্ন</button>
+            <button class="text-button" id="modelClear" type="button">উত্তর মুছুন</button>
+          </div>
+        </div>
+        <div class="panel student-card model-submit">
+          <button class="btn btn-primary" id="modelSubmit" type="button">টেস্ট জমা দিন</button>
+          <div id="modelConfirm" hidden>
+            <p id="modelConfirmText"></p>
+            <div class="actions">
+              <button class="btn btn-primary" id="modelFinish" type="button">জমা নিশ্চিত করুন</button>
+              <button class="btn btn-secondary" id="modelCancel" type="button">টেস্টে ফিরুন</button>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="panel student-card" id="modelResult" aria-labelledby="modelResultTitle" hidden>
+        <h2 id="modelResultTitle" tabindex="-1">মডেল টেস্টের ফল</h2>
+        <p class="model-score" id="modelScore"></p>
+        <p id="modelBreakdown"></p>
+        <div id="modelByChapter" class="model-report" hidden></div>
+        <div class="actions"><a class="btn btn-primary" id="modelReview">সংরক্ষিত ফল ও ব্যাখ্যা দেখুন</a></div>
+        <div id="modelReviewItems"></div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

@@ -703,4 +703,58 @@ const STUDY_CHAPTERS = [
   }
 ];
 
-STUDY_CHAPTERS.splice(1, 0, ...CLASS_EIGHT_SCIENCE, ...CLASS_EIGHT_MATH);
+STUDY_CHAPTERS.splice(1, 0, ...CLASS_EIGHT_SCIENCE, ...CLASS_EIGHT_MATH, ...CLASS_EIGHT_BGS);
+
+(() => {
+  const reading = "Last month, the students of Shapla School started a book exchange. A student could bring a book and take another one home. At first, the books were kept in an open box. On rainy days the box got wet, so the class moved the books to an empty cupboard. The exchange now takes place every Thursday.";
+  STUDY_CHAPTERS.push(
+    {
+      id: "bangla8-prefix-suffix", classId: "c8", subjectId: "bangla", chapter: "উপসর্গ ও প্রত্যয়",
+      goal: "শব্দে উপসর্গ ও প্রত্যয়ের অবস্থান চেনা এবং নতুন শব্দের অর্থ ব্যাখ্যা করা।",
+      keyPoints: [
+        "শব্দ বা ধাতুর আগে উপসর্গ যুক্ত হয়ে অর্থে পরিবর্তন আনতে পারে। যেমন সু + শিক্ষা = সুশিক্ষা। এখানে ‘সু’ ভালো বা যথাযথ শিক্ষা বোঝায়।",
+        "প্রত্যয় শব্দের মূল অংশ বা ধাতুর পরে যুক্ত হয়। যেমন বন্ধু + ত্ব = বন্ধুত্ব এবং মানব + তা = মানবতা।",
+        "শব্দ বিশ্লেষণের সময় আগে মূল অংশ চিহ্নিত করো, তারপর যুক্ত অংশের অবস্থান ও অর্থের পরিবর্তন মিলিয়ে দেখো।"
+      ],
+      example: { prompt: "‘অশুদ্ধ’ ও ‘বন্ধুত্ব’ শব্দ দুটি ভেঙে যুক্ত অংশের ধরন চেনো।",
+        steps: ["অ + শুদ্ধ = অশুদ্ধ। ‘অ’ আগে বসে বিপরীত অর্থ প্রকাশ করেছে, তাই এটি উপসর্গ।",
+          "বন্ধু + ত্ব = বন্ধুত্ব। ‘ত্ব’ পরে বসে সম্পর্ক বা ভাব বোঝাতে ব্যবহৃত হয়েছে, তাই এটি প্রত্যয়।"] },
+      commonMistake: "শব্দের শুরু বা শেষের অংশ আলাদা করলেই সেটি উপসর্গ বা প্রত্যয় হয়ে যায় না। মূল অংশ ও গঠিত শব্দের অর্থ মিলিয়ে দেখো।",
+      source: { label: "এনসিটিবি · অষ্টম শ্রেণির বাংলা ব্যাকরণ ও নির্মিতি", url: CLASS_EIGHT_TEXTBOOKS },
+      mcq: [
+        { q: "‘সুশিক্ষা’ শব্দে ‘সু’ যোগ হয়ে কোন অর্থ প্রকাশ করেছে?", options: ["শিক্ষার অভাব", "ভালো বা যথাযথ শিক্ষা", "শিক্ষার শেষ", "অনেকগুলো বিদ্যালয়"], answer: 1,
+          explain: "‘সু’ উপসর্গটি ‘শিক্ষা’র আগে বসে ভালো বা যথাযথ শিক্ষা বোঝায়।" },
+        { q: "কোন শব্দে ‘ত্ব’ যোগ হয়ে সম্পর্ক বোঝানো হয়েছে?", options: ["অশুদ্ধ", "সুশিক্ষা", "বন্ধুত্ব", "মানবতা"], answer: 2,
+          explain: "‘বন্ধু’র পরে ‘ত্ব’ প্রত্যয় বসে বন্ধুত্ব বা বন্ধুদের সম্পর্ক বোঝায়।" }
+      ],
+      short: [{ q: "‘সুশিক্ষা’ ও ‘মানবতা’ শব্দ ভেঙে যুক্ত অংশের ধরন লেখো।", marks: 2,
+        solution: "সু + শিক্ষা = সুশিক্ষা। ‘সু’ উপসর্গ। মানব + তা = মানবতা। ‘তা’ প্রত্যয়।",
+        criteria: ["সুশিক্ষার বিশ্লেষণ ও যুক্ত অংশের ধরন", "মানবতার বিশ্লেষণ ও যুক্ত অংশের ধরন"] }]
+    },
+    {
+      id: "english8-unseen-reading", classId: "c8", subjectId: "english", chapter: "Reading: Unseen Passage",
+      goal: "অপরিচিত ইংরেজি অনুচ্ছেদ থেকে তথ্য খুঁজে বের করা এবং নিজের ভাষায় সারাংশ লেখা।",
+      keyPoints: [
+        "প্রথম পাঠে অনুচ্ছেদের বিষয় ও প্রধান পরিবর্তন বোঝো। দ্বিতীয় পাঠে নাম, সময়, কারণ ও ফলের মতো চাওয়া তথ্যের পাশে দাগ দাও।",
+        "True/False বা তথ্য পূরণের উত্তর দেওয়ার আগে যে বাক্যটি উত্তর সমর্থন করে তা খুঁজে পাও। কারণ ও ফল উল্টে লিখলে বাক্যের অর্থ বদলে যায়।",
+        "সারাংশে মূল ঘটনা, তার কারণ ও ফল সংক্ষেপে লেখো। পাঠে নেই এমন মত বা তথ্য যোগ কোরো না।"
+      ],
+      example: { prompt: reading, steps: ["What changed? The students moved the books from a box to a cupboard.",
+        "Why? Rain made the open box wet.",
+        "Model summary: Shapla School students started exchanging books. They moved the books to a cupboard after rain wet the box, and they now exchange books on Thursdays."] },
+      commonMistake: "উত্তর খুঁজতে শুধু একটি ইংরেজি শব্দ দেখে থেমো না। পুরো বাক্যে শব্দটির সঙ্গে কী তথ্য দেওয়া হয়েছে তা দেখো।",
+      source: { label: "এনসিটিবি · জুনিয়র বৃত্তি পরীক্ষার প্রশ্নকাঠামো", url: "https://dhakaeducationboard.gov.bd/data/20250914184155279743.pdf" },
+      mcq: [
+        { q: reading + "\n\nWhy did the class move the books to a cupboard?", options: ["The box was too small.", "The cupboard was near a shop.", "The students needed new books.", "The box got wet in the rain."], answer: 3,
+          explain: "The passage says the open box got wet on rainy days, so the class moved the books." },
+        { q: reading + "\n\nChoose the statement supported by the passage.", options: ["The exchange takes place every Thursday.", "Only teachers can borrow books.", "Students pay for each book.", "The exchange ended after the rain."], answer: 0,
+          explain: "The last sentence tells us that the exchange now takes place every Thursday." }
+      ],
+      short: [{ q: reading + "\n\nWrite a short summary in your own words.", marks: 5,
+        solution: "Shapla School students began a book exchange. When rain wet the open box, they moved the books to a cupboard. The exchange is now held on Thursdays.",
+        criteria: [{ text: "School students started exchanging books", marks: 1 }, { text: "Rain made the box wet", marks: 1 },
+          { text: "Books moved to a cupboard", marks: 1 }, { text: "The exchange takes place on Thursdays", marks: 1 },
+          { text: "Concise and coherent summary in the student's own words", marks: 1 }] }]
+    }
+  );
+})();
