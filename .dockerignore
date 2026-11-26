@@ -1,0 +1,11 @@
+**
+!*.html
+!*.js
+!preview.mjs
+!assets/
+!assets/**
+!student-pilot/
+!student-pilot/server.mjs
+!student-pilot/backup.mjs
+!student-pilot/container-start.mjs
+!*.txt
