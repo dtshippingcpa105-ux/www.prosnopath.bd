@@ -8,7 +8,7 @@ const SITE = {
   // মতামতের জন্য WhatsApp নম্বর: দেশের কোডসহ শুধু অঙ্ক, যেমন "8801712345678"। খালি রাখলে বোতাম দেখাবে না।
   "whatsapp": "8801673939421",
   // Google Form-এর শেয়ার লিংক, যেমন "https://forms.gle/xxxx"। খালি রাখলে বোতাম দেখাবে না।
-  "feedbackForm": ""
+  "feedbackForm": "https://forms.gle/VV6uZ1PqRwB8FyRj8"
 };
 
 const CLASSES = [
