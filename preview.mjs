@@ -53,7 +53,8 @@ const studentPilot = pilotEnabled ? await (await import("./student-pilot/server.
   contentRoot: root,
   dbPath: dbPath || localDb,
   publicOrigin,
-  inviteCode: process.env.PROSNOPATH_PILOT_INVITE
+  inviteCode: process.env.PROSNOPATH_PILOT_INVITE,
+  adminPassword: process.env.PROSNOPATH_ADMIN_PASSWORD
 }) : null;
 
 const server = createServer(hosted ? { headersTimeout: 10_000, requestTimeout: 20_000 } : {}, async (request, response) => {
@@ -81,7 +82,7 @@ const server = createServer(hosted ? { headersTimeout: 10_000, requestTimeout: 2
 
   const file = path === "/" ? "index.html" : path.slice(1);
   const extension = file.split(".").at(-1);
-  const pilotPage = file === "student.html" || file === "student-model.html" || file === "parent-view.html";
+  const pilotPage = file === "student.html" || file === "student-model.html" || file === "parent-view.html" || file === "admin.html";
   if ((studentPilot || !pilotPage) && /^(?:assets\/)?[a-z\d-]+\.(?:html|js|css|png|jpg)$/.test(file) || file === "robots.txt" || file === "sitemap.xml") {
     try {
       let data = file === "404.html" ? missing : await readFile(fileURLToPath(new URL(file, root)));

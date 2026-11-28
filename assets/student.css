@@ -208,3 +208,43 @@
   .parent-two { grid-template-columns: minmax(0, 1fr); }
 }
 .parent-main { --c-right: #1f9d6b; --c-wrong: #e5484d; --c-skip: #b8c2d3; }
+
+/* রিকভারি কোড ও অ্যাকাউন্ট সেটিংস */
+.recovery-box { margin-bottom: 1rem; padding: 1.2rem 1.3rem; border: 2px dashed #f59e0b; background: #fffaf0; }
+.recovery-box h2 { margin-top: 0; }
+.recovery-code { margin: .6rem 0; padding: .7rem 1rem; border-radius: 10px; background: #fff; border: 1px solid #f6c56b; font: 700 clamp(1.4rem, 5vw, 2rem)/1.2 ui-monospace, "Consolas", monospace; letter-spacing: .12em; text-align: center; color: var(--navy); user-select: all; }
+.account-reset { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--line); }
+.account-reset h3 { margin: 0 0 .3rem; }
+.account-settings { margin-top: 1rem; padding: .3rem 1.2rem; }
+.account-settings summary { display: flex; align-items: center; gap: .7rem; min-height: 48px; cursor: pointer; font-weight: 700; color: var(--navy); }
+.account-flag { padding: .1rem .6rem; border-radius: 999px; background: #fdecec; color: #b42318; font-size: .85rem; }
+.account-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem 1.5rem; padding-bottom: 1rem; }
+.account-grid h3 { margin: .2rem 0 .4rem; }
+.account-settings .status-box { margin-bottom: 1rem; }
+@media (max-width: 700px) { .account-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* অ্যাডমিন */
+.admin-main .student-wrap { max-width: 1120px; }
+.admin-login { max-width: 30rem; padding: 1.3rem; }
+.admin-totals { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .8rem; margin-bottom: 1rem; }
+.admin-totals > div { display: grid; gap: .1rem; padding: .9rem; text-align: center; }
+.admin-totals strong { font-size: 1.7rem; color: var(--navy); }
+.admin-totals span { color: var(--muted); font-size: .9rem; }
+.admin-reset-result { margin-bottom: 1rem; padding: 1.1rem 1.3rem; border: 2px dashed #2848a8; background: #f3f6ff; }
+.admin-reset-result h2 { margin-top: 0; }
+.admin-list { padding: 1.1rem 1.2rem; }
+.admin-list-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem 1rem; margin-bottom: .8rem; }
+.admin-list-head h2 { margin: 0; }
+.admin-table { overflow-x: auto; }
+.admin-table table { width: 100%; border-collapse: collapse; min-width: 720px; }
+.admin-table th, .admin-table td { padding: .6rem .5rem; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+.admin-table thead th { color: var(--muted); font-size: .9rem; }
+.admin-table tbody th small { display: block; color: var(--muted); font-weight: 400; font-size: .8rem; }
+.admin-tags { display: flex; flex-wrap: wrap; gap: .3rem; }
+.admin-tags span { padding: .05rem .5rem; border-radius: 999px; font-size: .8rem; background: #e6f6ee; color: #0f5e3c; }
+.admin-tags span[data-ok="false"] { background: #fdecec; color: #9b2227; }
+.admin-tags span[data-ok="warn"] { background: #fff4e0; color: #8a4b05; }
+.admin-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .3rem .7rem; }
+.admin-actions .btn { min-height: 38px; }
+.admin-delete { color: #b42318; }
+@media (max-width: 800px) { .admin-totals { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

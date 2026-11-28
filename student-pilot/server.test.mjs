@@ -276,6 +276,54 @@ test("subject results stay separate, private, and available across logins and re
   await client("/dashboard", { cookie: separateCookie, status: 401 });
   assert.equal((await client("/dashboard", { cookie: cookieA })).data.attemptCount, 1);
 
+  // রিকভারি কোড, পাসওয়ার্ড রিসেট ও বদল
+  const recovery = a.data.recoveryCode;
+  assert.match(recovery, /^[2-9A-HJ-NP-Z]{4}-[2-9A-HJ-NP-Z]{4}-[2-9A-HJ-NP-Z]{4}$/);
+  await close();
+  const adminPassword = "admin-" + randomBytes(9).toString("hex");
+  await open({ adminPassword });
+  assert.equal((await client("/account", { cookie: cookieA })).data.hasRecovery, true);
+  const newPassword = randomBytes(15).toString("base64url");
+  await client("/reset-password", { body: { username: "learner-one", code: "ABCD-EFGH-JKLM", password: newPassword }, status: 401 });
+  await client("/reset-password", { body: { username: "learner-one", code: recovery, password: "short" }, status: 400 });
+  const reset = await client("/reset-password", { body: { username: "LEARNER-one", code: recovery.toLowerCase(), password: newPassword } });
+  assert.notEqual(reset.data.recoveryCode, recovery);
+  await client("/dashboard", { cookie: cookieA, status: 401 });
+  await client("/reset-password", { body: { username: "learner-one", code: recovery, password: newPassword }, status: 401 });
+  await client("/login", { body: first, status: 401 });
+  const relogged = (await client("/login", { body: { ...first, password: newPassword } })).session.split(";")[0];
+  await client("/change-password", { cookie: relogged, body: { current: "wrong-password!", next: password }, status: 401 });
+  await client("/change-password", { cookie: relogged, body: { current: newPassword, next: password } });
+  await client("/dashboard", { cookie: relogged });
+  const fresh = (await client("/recovery-code", { cookie: relogged, body: { current: password } })).data.recoveryCode;
+  assert.notEqual(fresh, reset.data.recoveryCode);
+
+  // অ্যাডমিন অংশ
+  assert.deepEqual((await client("/admin/session")).data, { enabled: true, signedIn: false });
+  await client("/admin/overview", { status: 401 });
+  await client("/admin/login", { body: { password: "nope" }, status: 401 });
+  const admin = await client("/admin/login", { body: { password: adminPassword } });
+  assert.match(admin.session, /^prosnopath_admin=[a-f0-9]{64}; Path=\/; HttpOnly; SameSite=Strict/);
+  const adminCookie = admin.session.split(";")[0];
+  await client("/admin/overview", { cookie: cookieB, status: 401 });
+  const panel = (await client("/admin/overview", { cookie: adminCookie })).data;
+  assert.equal(panel.totals.students, 2);
+  assert.ok(panel.students.some((row) => row.username === "learner-one" && row.quizzes > 0 && row.hasRecovery));
+  assert.ok(!JSON.stringify(panel).includes("password"));
+  await client("/admin/reset-code", { cookie: adminCookie, body: { username: "nobody-here" }, status: 404 });
+  const adminCode = (await client("/admin/reset-code", { cookie: adminCookie, body: { username: "learner-two" } })).data;
+  assert.match(adminCode.code, /^[2-9A-HJ-NP-Z]{5}-[2-9A-HJ-NP-Z]{5}$/);
+  const secondPassword = randomBytes(15).toString("base64url");
+  await client("/reset-password", { body: { username: "learner-two", code: adminCode.code, password: secondPassword } });
+  await client("/reset-password", { body: { username: "learner-two", code: adminCode.code, password: secondPassword }, status: 401 });
+  await client("/login", { body: { username: "learner-two", password: secondPassword } });
+  await client("/admin/delete-student", { cookie: adminCookie, body: { username: "learner-two", confirm: "learner" }, status: 400 });
+  await client("/admin/delete-student", { cookie: adminCookie, body: { username: "learner-two", confirm: "learner-two" } });
+  assert.equal((await client("/admin/overview", { cookie: adminCookie })).data.totals.students, 1);
+  await client("/login", { body: { username: "learner-two", password: secondPassword }, status: 401 });
+  await client("/admin/logout", { cookie: adminCookie, body: {} });
+  await client("/admin/overview", { cookie: adminCookie, status: 401 });
+
   await close();
   const publicOrigin = "https://pilot.example";
   const inviteCode = randomBytes(12).toString("hex");

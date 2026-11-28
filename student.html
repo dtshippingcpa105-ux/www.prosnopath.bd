@@ -46,6 +46,15 @@
       </header>
       <p class="status-box" id="studentStatus" role="status">শিক্ষার্থী ড্যাশবোর্ড লোড হচ্ছে…</p>
       <noscript><p class="status-box">শিক্ষার্থী ড্যাশবোর্ড ব্যবহার করতে জাভাস্ক্রিপ্ট চালু করুন।</p></noscript>
+      <section class="recovery-box panel" id="recoveryBox" aria-labelledby="recoveryTitle" hidden>
+        <h2 id="recoveryTitle" tabindex="-1">🔑 তোমার রিকভারি কোড</h2>
+        <p>পাসওয়ার্ড ভুলে গেলে এই কোড দিয়ে নতুন পাসওয়ার্ড দেওয়া যাবে। কোডটা <strong>খাতায় লিখে রাখো</strong> বা নিরাপদ জায়গায় রাখো। এটা আর দেখানো হবে না।</p>
+        <p class="recovery-code" id="recoveryCode" dir="ltr"></p>
+        <div class="actions">
+          <button type="button" class="btn btn-secondary" id="recoveryCopy">কোড কপি করো</button>
+          <button type="button" class="btn btn-primary" id="recoveryDone">লিখে রেখেছি ✓</button>
+        </div>
+      </section>
       <section class="student-card panel" id="studentAccess" aria-labelledby="accessTitle" hidden>
         <div>
           <h2 id="accessTitle" tabindex="-1">শিক্ষার্থী আইডি</h2>
@@ -66,6 +75,22 @@
           <div class="actions">
             <button class="btn btn-primary" type="submit" value="login">লগইন করুন</button>
             <button class="btn btn-secondary" type="submit" value="register">নতুন আইডি তৈরি করুন</button>
+          </div>
+          <p><button type="button" class="text-button" id="studentForgot">পাসওয়ার্ড ভুলে গেছি?</button></p>
+        </form>
+        <form id="studentReset" class="feedback-form account-reset" hidden>
+          <h3>পাসওয়ার্ড নতুন করে দিন</h3>
+          <p class="muted">আইডি খোলার সময় পাওয়া <strong>রিকভারি কোড</strong>, অথবা প্রশ্নপাঠের কাছ থেকে নেওয়া <strong>রিসেট কোড</strong> দিন। কোড হারালে মতামত পেজ থেকে WhatsApp-এ আইডি জানিয়ে রিসেট কোড চান।</p>
+          <label for="resetUsername">আইডি</label>
+          <input id="resetUsername" required minlength="4" maxlength="24" autocomplete="username" autocapitalize="none" spellcheck="false" dir="ltr" lang="en">
+          <label for="resetCode">রিকভারি বা রিসেট কোড</label>
+          <input id="resetCode" required maxlength="20" autocomplete="one-time-code" autocapitalize="characters" spellcheck="false" dir="ltr" placeholder="XXXX-XXXX-XXXX">
+          <label for="resetPassword">নতুন পাসওয়ার্ড</label>
+          <input id="resetPassword" type="password" required minlength="10" maxlength="128" autocomplete="new-password">
+          <p class="muted">অন্তত ১০ অক্ষর।</p>
+          <div class="actions">
+            <button class="btn btn-primary" type="submit">পাসওয়ার্ড বদলান</button>
+            <button class="text-button" type="button" id="studentResetBack">লগইনে ফিরুন</button>
           </div>
         </form>
       </section>
@@ -144,6 +169,28 @@
               <button type="button" class="text-button" id="parentShareRevoke" hidden>লিংক বন্ধ করো</button>
             </div>
           </section>
+          <details class="account-settings panel" id="accountSettings">
+            <summary><span>⚙️ অ্যাকাউন্ট সেটিংস</span><span class="account-flag" id="accountFlag" hidden>রিকভারি কোড নেই</span></summary>
+            <div class="account-grid">
+              <form id="accountPassword" class="feedback-form">
+                <h3>পাসওয়ার্ড বদলাও</h3>
+                <label for="accountCurrent">বর্তমান পাসওয়ার্ড</label>
+                <input id="accountCurrent" type="password" required maxlength="128" autocomplete="current-password">
+                <label for="accountNext">নতুন পাসওয়ার্ড</label>
+                <input id="accountNext" type="password" required minlength="10" maxlength="128" autocomplete="new-password">
+                <p class="muted">অন্তত ১০ অক্ষর। বদলালে অন্য ডিভাইস থেকে লগআউট হয়ে যাবে।</p>
+                <button class="btn btn-secondary" type="submit">পাসওয়ার্ড বদলাও</button>
+              </form>
+              <form id="accountRecovery" class="feedback-form">
+                <h3>রিকভারি কোড</h3>
+                <p class="muted" id="accountRecoveryInfo"></p>
+                <label for="accountRecoveryPassword">বর্তমান পাসওয়ার্ড</label>
+                <input id="accountRecoveryPassword" type="password" required maxlength="128" autocomplete="current-password">
+                <button class="btn btn-secondary" type="submit" id="accountRecoveryButton">নতুন রিকভারি কোড নাও</button>
+              </form>
+            </div>
+            <p class="status-box" id="accountStatus" role="status" hidden></p>
+          </details>
           <section class="dash-weak panel" id="dashWeak" aria-labelledby="dashWeakTitle">
             <h3 id="dashWeakTitle">অধ্যায়ভিত্তিক দক্ষতা</h3>
             <p class="muted">সাম্প্রতিক কুইজের ফল ধরে হিসাব। কম শতাংশের অধ্যায় আগে দেখানো হয়েছে।</p>

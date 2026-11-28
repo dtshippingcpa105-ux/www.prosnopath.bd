@@ -338,6 +338,82 @@
     setTimeout(() => { get("parentShareCopy").textContent = "লিংক কপি করো"; }, 2500);
   });
 
+
+  // ---- রিকভারি কোড, পাসওয়ার্ড রিসেট ও বদল ----
+  function showRecovery(code) {
+    get("recoveryCode").textContent = code;
+    get("recoveryBox").hidden = false;
+    get("recoveryTitle").focus();
+    get("recoveryBox").scrollIntoView({ block: "start" });
+  }
+  get("recoveryCopy").addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(get("recoveryCode").textContent); get("recoveryCopy").textContent = "কপি হয়েছে ✓"; }
+    catch { get("recoveryCopy").textContent = "নিজে লিখে নাও"; }
+  });
+  get("recoveryDone").addEventListener("click", () => {
+    if (!confirm("কোডটা কি সত্যিই লিখে রেখেছ? এটা আর দেখানো হবে না।")) return;
+    get("recoveryBox").hidden = true;
+    loadAccount();
+  });
+  const resetForm = get("studentReset");
+  get("studentForgot").addEventListener("click", () => {
+    form.hidden = true;
+    resetForm.hidden = false;
+    get("resetUsername").value = form.elements.username.value;
+    get("resetUsername").focus();
+  });
+  get("studentResetBack").addEventListener("click", () => { resetForm.hidden = true; form.hidden = false; });
+  resetForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const button = resetForm.querySelector("button[type=submit]");
+    button.disabled = true;
+    announce("যাচাই হচ্ছে…");
+    try {
+      const result = await PB.studentRequest("/reset-password", {
+        username: get("resetUsername").value, code: get("resetCode").value, password: get("resetPassword").value
+      });
+      resetForm.reset();
+      resetForm.hidden = true;
+      form.hidden = false;
+      await loadDashboard();
+      announce("পাসওয়ার্ড বদলেছে। পুরোনো কোড আর কাজ করবে না, নিচে তোমার নতুন রিকভারি কোড।");
+      showRecovery(result.recoveryCode);
+    } catch (error) {
+      announce(error.message);
+    } finally {
+      button.disabled = false;
+    }
+  });
+  function accountMessage(text) { const box = get("accountStatus"); box.textContent = text; box.hidden = !text; }
+  async function loadAccount() {
+    try {
+      const { hasRecovery } = await PB.studentRequest("/account");
+      get("accountFlag").hidden = hasRecovery;
+      get("accountRecoveryInfo").textContent = hasRecovery
+        ? "তোমার রিকভারি কোড আছে। হারিয়ে ফেললে নতুন কোড নাও; আগেরটা আর কাজ করবে না।"
+        : "তোমার এখনো রিকভারি কোড নেই। পাসওয়ার্ড ভুলে গেলে যেন আইডি না হারাও, এখনই একটা কোড নিয়ে লিখে রাখো।";
+      get("accountRecoveryButton").textContent = hasRecovery ? "নতুন রিকভারি কোড নাও" : "রিকভারি কোড তৈরি করো";
+      if (!hasRecovery) get("accountSettings").open = true;
+    } catch { /* অ্যাকাউন্ট তথ্য না এলে বাকি ড্যাশবোর্ড চলবে */ }
+  }
+  get("accountPassword").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    try {
+      await PB.studentRequest("/change-password", { current: get("accountCurrent").value, next: get("accountNext").value });
+      event.target.reset();
+      accountMessage("পাসওয়ার্ড বদলেছে। অন্য ডিভাইসে আবার লগইন করতে হবে।");
+    } catch (error) { accountMessage(error.message); }
+  });
+  get("accountRecovery").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    try {
+      const { recoveryCode } = await PB.studentRequest("/recovery-code", { current: get("accountRecoveryPassword").value });
+      event.target.reset();
+      accountMessage("");
+      showRecovery(recoveryCode);
+    } catch (error) { accountMessage(error.message); }
+  });
+
   async function loadDashboard() {
     const { student, subjects, chapterQuizzes, attempts, attemptCount, best, modelTest, overview } = await PB.studentRequest("/dashboard");
     const reports = chapterQuizzes ?? subjects ?? [{
@@ -355,6 +431,7 @@
     renderOverview(overview);
     renderWeak(reports);
     loadParentLink();
+    loadAccount();
     get("studentModel").hidden = !modelTest;
     if (modelTest) {
       get("studentModelInfo").textContent = modelTest.title + " · " + PB.bn(modelTest.total) + "টি প্রশ্ন · " + PB.bn(modelTest.minutes) + " মিনিট";
@@ -394,12 +471,13 @@
     for (const button of buttons) button.disabled = true;
     announce("যাচাই হচ্ছে…");
     try {
-      await PB.studentRequest(action, {
+      const result = await PB.studentRequest(action, {
         username: form.elements.username.value, password: form.elements.password.value,
         invite: action === "/register" ? form.elements.invite.value : undefined
       });
       form.reset();
       await loadDashboard();
+      if (result.recoveryCode) { showRecovery(result.recoveryCode); return; }
       if (review.hidden) get("studentSubject").focus();
     } catch (error) {
       announce(error.message);

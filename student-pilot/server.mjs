@@ -1,4 +1,4 @@
-import { createHash, randomBytes, randomUUID, scrypt, timingSafeEqual } from "node:crypto";
+import { createHash, randomBytes, randomInt, randomUUID, scrypt, timingSafeEqual } from "node:crypto";
 import { mkdir, readFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { DatabaseSync } from "node:sqlite";
@@ -93,13 +93,28 @@ function modelBreakdown(questions) {
   return { subjects: [...subjects.values()], chapters: [...chapters.values()] };
 }
 
-export async function openStudentPilot({ contentRoot, dbPath, publicOrigin, inviteCode }) {
+// সহজে পড়া ও বলা যায় এমন অক্ষর (0/O, 1/I বাদ)
+const codeAlphabet = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
+function makeCode(groups, size = 4) {
+  return Array.from({ length: groups }, () =>
+    Array.from({ length: size }, () => codeAlphabet[randomInt(codeAlphabet.length)]).join("")).join("-");
+}
+const normalizeCode = (value) => typeof value === "string" ? value.toUpperCase().replace(/[^0-9A-Z]/g, "") : "";
+const codeHash = (value) => createHash("sha256").update(normalizeCode(value)).digest("hex");
+const sameHex = (a, b) => typeof a === "string" && typeof b === "string" && a.length === b.length
+  && timingSafeEqual(Buffer.from(a, "hex"), Buffer.from(b, "hex"));
+
+export async function openStudentPilot({ contentRoot, dbPath, publicOrigin, inviteCode, adminPassword }) {
   const hosted = publicOrigin ? new URL(publicOrigin) : null;
   if (hosted && (hosted.protocol !== "https:" || hosted.origin !== publicOrigin
     || !/^[A-Za-z0-9-]{16,64}$/.test(inviteCode || ""))) {
     throw new Error("The hosted pilot needs an exact HTTPS origin and a 16–64-character invite code.");
   }
   const inviteHash = hosted ? sha256(inviteCode) : null;
+  const adminHash = typeof adminPassword === "string" && adminPassword.length >= 12 ? sha256(adminPassword) : null;
+  const adminCookieName = hosted ? "__Host-prosnopath_admin" : "prosnopath_admin";
+  const adminSessions = new Map();
+  const adminSeconds = 12 * 60 * 60;
   const cookieName = hosted ? "__Host-" + localCookie : localCookie;
 
   function sessionHash(request) {
@@ -191,6 +206,11 @@ export async function openStudentPilot({ contentRoot, dbPath, publicOrigin, invi
       deadline INTEGER NOT NULL,
       choices_json TEXT NOT NULL
     ) STRICT;
+    CREATE TABLE IF NOT EXISTS reset_codes (
+      student_id TEXT PRIMARY KEY REFERENCES students(id) ON DELETE CASCADE,
+      code_hash TEXT NOT NULL,
+      expires_at INTEGER NOT NULL
+    ) STRICT;
     CREATE TABLE IF NOT EXISTS parent_links (
       student_id TEXT PRIMARY KEY REFERENCES students(id) ON DELETE CASCADE,
       token_hash TEXT NOT NULL UNIQUE,
@@ -205,9 +225,33 @@ export async function openStudentPilot({ contentRoot, dbPath, publicOrigin, invi
       PRIMARY KEY (student_id, source, q)
     ) STRICT;
   `);
+  const studentColumns = new Set(db.prepare("PRAGMA table_info(students)").all().map((c) => c.name));
+  if (!studentColumns.has("recovery_hash")) db.exec("ALTER TABLE students ADD COLUMN recovery_hash TEXT");
+  if (!studentColumns.has("created_at")) db.exec("ALTER TABLE students ADD COLUMN created_at INTEGER");
   const sql = {
     findStudent: db.prepare("SELECT * FROM students WHERE username = ?"),
-    addStudent: db.prepare("INSERT INTO students VALUES (?, ?, ?, ?) ON CONFLICT(username) DO NOTHING"),
+    addStudent: db.prepare("INSERT INTO students(id, username, salt, password_hash, created_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT(username) DO NOTHING"),
+    findStudentById: db.prepare("SELECT * FROM students WHERE id = ?"),
+    setRecovery: db.prepare("UPDATE students SET recovery_hash = ? WHERE id = ?"),
+    setPassword: db.prepare("UPDATE students SET salt = ?, password_hash = ? WHERE id = ?"),
+    endAllSessions: db.prepare("DELETE FROM sessions WHERE student_id = ?"),
+    endOtherSessions: db.prepare("DELETE FROM sessions WHERE student_id = ? AND token_hash != ?"),
+    resetCode: db.prepare("SELECT code_hash, expires_at FROM reset_codes WHERE student_id = ?"),
+    setResetCode: db.prepare("INSERT INTO reset_codes VALUES (?, ?, ?) ON CONFLICT(student_id) DO UPDATE SET code_hash = excluded.code_hash, expires_at = excluded.expires_at"),
+    deleteResetCode: db.prepare("DELETE FROM reset_codes WHERE student_id = ?"),
+    deleteStudent: db.prepare("DELETE FROM students WHERE id = ?"),
+    adminStudents: db.prepare(`SELECT s.username, s.created_at,
+      (SELECT count(*) FROM quiz_attempts q WHERE q.student_id = s.id AND q.completed_at IS NOT NULL) AS quizzes,
+      (SELECT max(completed_at) FROM quiz_attempts q WHERE q.student_id = s.id) AS last_active,
+      s.recovery_hash IS NOT NULL AS has_recovery,
+      EXISTS (SELECT 1 FROM parent_links p WHERE p.student_id = s.id) AS parent_link,
+      (SELECT expires_at FROM reset_codes r WHERE r.student_id = s.id) AS reset_expires
+      FROM students s ORDER BY coalesce(last_active, s.created_at, 0) DESC LIMIT 500`),
+    adminTotals: db.prepare(`SELECT (SELECT count(*) FROM students) AS students,
+      (SELECT count(DISTINCT student_id) FROM quiz_attempts WHERE completed_at >= ?) AS active7,
+      (SELECT count(*) FROM quiz_attempts WHERE completed_at IS NOT NULL) AS quizzes,
+      (SELECT count(*) FROM quiz_attempts WHERE completed_at >= ?) AS quizzes7,
+      (SELECT count(*) FROM parent_links) AS parent_links`),
     findSession: db.prepare("SELECT students.id, username FROM students JOIN sessions ON students.id = sessions.student_id WHERE token_hash = ? AND expires_at > ?"),
     addSession: db.prepare("INSERT INTO sessions VALUES (?, ?, ?)"),
     endSession: db.prepare("DELETE FROM sessions WHERE token_hash = ?"),
@@ -428,22 +472,40 @@ export async function openStudentPilot({ contentRoot, dbPath, publicOrigin, invi
   const dummySalt = randomBytes(16).toString("hex");
   const dummyHash = Buffer.alloc(64);
 
-  function signIn(request, response, student, status) {
+  function signIn(request, response, student, status, extra = {}) {
     const token = randomBytes(32).toString("hex");
     const now = Date.now();
     sql.clearExpiredSessions.run(now);
     sql.addSession.run(sha256(token).toString("hex"), student.id, now + sessionSeconds * 1000);
     sql.endSession.run(sessionHash(request));
-    json(response, status, { student: publicStudent(student) }, { "Set-Cookie": sessionCookie(token, sessionSeconds) });
+    json(response, status, { student: publicStudent(student), ...extra }, { "Set-Cookie": sessionCookie(token, sessionSeconds) });
   }
 
-  async function authenticate(request, response, register) {
+  function checkAuthRate() {
     const now = Date.now();
     if (now >= rateWindow) {
       rateWindow = now + 60_000;
       authAttempts = 0;
     }
     if (++authAttempts > 25) throw new RequestError(429, "অনেকবার চেষ্টা হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।");
+  }
+  async function verifyPassword(student, password) {
+    const candidate = await deriveKey(typeof password === "string" ? password : "", student?.salt ?? dummySalt, 64);
+    return timingSafeEqual(candidate, student ? Buffer.from(student.password_hash, "hex") : dummyHash) && !!student;
+  }
+  async function storePassword(studentId, password) {
+    const salt = randomBytes(16).toString("hex");
+    const hash = await deriveKey(password, salt, 64);
+    sql.setPassword.run(salt, hash.toString("hex"), studentId);
+  }
+  function newRecoveryCode(studentId) {
+    const code = makeCode(3);
+    sql.setRecovery.run(codeHash(code), studentId);
+    return code;
+  }
+  const validPassword = (p) => typeof p === "string" && p.length >= 10 && Buffer.byteLength(p) <= 256;
+  async function authenticate(request, response, register) {
+    checkAuthRate();
     const body = await readBody(request);
     const username = typeof body.username === "string" ? body.username.trim().toLowerCase() : "";
     const password = typeof body.password === "string" ? body.password : "";
@@ -458,16 +520,78 @@ export async function openStudentPilot({ contentRoot, dbPath, publicOrigin, invi
       const id = randomUUID();
       const salt = randomBytes(16).toString("hex");
       const hash = await deriveKey(password, salt, 64);
-      if (!sql.addStudent.run(id, username, salt, hash.toString("hex")).changes) {
+      if (!sql.addStudent.run(id, username, salt, hash.toString("hex"), Date.now()).changes) {
         throw new RequestError(409, "এই আইডিটি ব্যবহৃত হচ্ছে। অন্য একটি আইডি বেছে নিন।");
       }
-      return signIn(request, response, { id, username }, 201);
+      return signIn(request, response, { id, username }, 201, { recoveryCode: newRecoveryCode(id) });
     }
     const student = sql.findStudent.get(username);
     const candidate = await deriveKey(password, student?.salt ?? dummySalt, 64);
     const matches = timingSafeEqual(candidate, student ? Buffer.from(student.password_hash, "hex") : dummyHash);
     if (!student || !matches) throw new RequestError(401, "আইডি বা পাসওয়ার্ড মেলেনি।");
     signIn(request, response, student, 200);
+  }
+
+  function adminToken(request) {
+    const entry = request.headers.cookie?.split(";").map((part) => part.trim())
+      .find((part) => part.startsWith(adminCookieName + "="));
+    const token = entry?.slice(adminCookieName.length + 1);
+    if (!/^[a-f0-9]{64}$/.test(token || "")) return "";
+    const key = sha256(token).toString("hex");
+    const expires = adminSessions.get(key);
+    if (!expires || expires < Date.now()) { adminSessions.delete(key); return ""; }
+    return key;
+  }
+  function adminCookie(token, seconds) {
+    return adminCookieName + "=" + token + "; Path=/; HttpOnly; SameSite=Strict; Max-Age=" + seconds + (hosted ? "; Secure" : "");
+  }
+  async function handleAdmin(request, response, path, method) {
+    const signedIn = adminToken(request);
+    if (method === "GET" && path === "/admin/session") return json(response, 200, { enabled: !!adminHash, signedIn: !!signedIn });
+    if (method === "POST" && path === "/admin/login") {
+      checkAuthRate();
+      const { password } = await readBody(request);
+      if (!adminHash) throw new RequestError(403, "অ্যাডমিন অংশ চালু নেই। সার্ভারে PROSNOPATH_ADMIN_PASSWORD সেট করুন।");
+      if (typeof password !== "string" || !timingSafeEqual(sha256(password), adminHash)) throw new RequestError(401, "অ্যাডমিন পাসওয়ার্ড মেলেনি।");
+      const token = randomBytes(32).toString("hex");
+      adminSessions.set(sha256(token).toString("hex"), Date.now() + adminSeconds * 1000);
+      return json(response, 200, { signedIn: true }, { "Set-Cookie": adminCookie(token, adminSeconds) });
+    }
+    if (method === "POST" && path === "/admin/logout") {
+      adminSessions.delete(signedIn);
+      return json(response, 200, { signedIn: false }, { "Set-Cookie": adminCookie("", 0) });
+    }
+    if (!adminHash || !signedIn) throw new RequestError(401, "অ্যাডমিন হিসেবে লগইন করুন।");
+    const now = Date.now();
+    if (method === "GET" && path === "/admin/overview") {
+      const weekAgo = now - 7 * 86_400_000;
+      const totals = sql.adminTotals.get(weekAgo, weekAgo);
+      return json(response, 200, {
+        totals: { ...totals },
+        inviteRequired: !!inviteHash,
+        students: sql.adminStudents.all().map((row) => ({
+          username: row.username, createdAt: row.created_at, quizzes: row.quizzes, lastActive: row.last_active,
+          hasRecovery: !!row.has_recovery, parentLink: !!row.parent_link,
+          resetPending: !!row.reset_expires && row.reset_expires > now ? row.reset_expires : null
+        }))
+      });
+    }
+    if (method === "POST" && (path === "/admin/reset-code" || path === "/admin/delete-student")) {
+      const body = await readBody(request);
+      const username = typeof body.username === "string" ? body.username.trim().toLowerCase() : "";
+      const target = sql.findStudent.get(username);
+      if (!target) throw new RequestError(404, "এই আইডির কোনো শিক্ষার্থী পাওয়া যায়নি।");
+      if (path === "/admin/reset-code") {
+        const code = makeCode(2, 5);
+        const expiresAt = now + 24 * 60 * 60 * 1000;
+        sql.setResetCode.run(target.id, codeHash(code), expiresAt);
+        return json(response, 200, { username, code, expiresAt });
+      }
+      if (body.confirm !== username) throw new RequestError(400, "মুছতে আইডিটি হুবহু আবার লিখুন।");
+      sql.deleteStudent.run(target.id);
+      return json(response, 200, { deleted: username });
+    }
+    throw new RequestError(404, "পাতাটি পাওয়া যায়নি।");
   }
 
   async function handle(request, response, path) {
@@ -484,6 +608,27 @@ export async function openStudentPilot({ contentRoot, dbPath, publicOrigin, invi
 
     if (method === "POST" && path === "/register") return authenticate(request, response, true);
     if (method === "POST" && path === "/login") return authenticate(request, response, false);
+    if (method === "POST" && path === "/reset-password") {
+      checkAuthRate();
+      const body = await readBody(request);
+      const username = typeof body.username === "string" ? body.username.trim().toLowerCase() : "";
+      const code = normalizeCode(body.code);
+      if (!/^[a-z][a-z0-9-]{3,23}$/.test(username) || code.length < 8 || code.length > 20) {
+        throw new RequestError(400, "আইডি ও কোড ঠিকভাবে লিখুন।");
+      }
+      if (!validPassword(body.password)) throw new RequestError(400, "নতুন পাসওয়ার্ড অন্তত ১০ অক্ষরের হবে।");
+      const target = sql.findStudent.get(username);
+      const given = codeHash(code);
+      const reset = target && sql.resetCode.get(target.id);
+      const byRecovery = !!target && sameHex(target.recovery_hash, given);
+      const byAdmin = !!reset && reset.expires_at > Date.now() && sameHex(reset.code_hash, given);
+      if (!byRecovery && !byAdmin) throw new RequestError(401, "আইডি বা কোড মেলেনি। কোডের মেয়াদ শেষ হলে নতুন কোড নিন।");
+      await storePassword(target.id, body.password);
+      sql.endAllSessions.run(target.id);
+      sql.deleteResetCode.run(target.id);
+      return signIn(request, response, target, 200, { recoveryCode: newRecoveryCode(target.id) });
+    }
+    if (path.startsWith("/admin/")) return handleAdmin(request, response, path, method);
     const tokenHash = sessionHash(request);
     const student = tokenHash && sql.findSession.get(tokenHash, Date.now());
     if (method === "GET" && path === "/session") {
@@ -507,6 +652,20 @@ export async function openStudentPilot({ contentRoot, dbPath, publicOrigin, invi
       return json(response, 200, parentSummary(owner, now));
     }
     if (!student) throw new RequestError(401, "এই অংশটি দেখতে শিক্ষার্থী আইডিতে ঢুকুন।");
+    if (method === "GET" && path === "/account") {
+      return json(response, 200, { hasRecovery: !!sql.findStudentById.get(student.id)?.recovery_hash });
+    }
+    if (method === "POST" && (path === "/change-password" || path === "/recovery-code")) {
+      checkAuthRate();
+      const body = await readBody(request);
+      const row = sql.findStudentById.get(student.id);
+      if (!(await verifyPassword(row, body.current))) throw new RequestError(401, "বর্তমান পাসওয়ার্ড মেলেনি।");
+      if (path === "/recovery-code") return json(response, 200, { recoveryCode: newRecoveryCode(student.id) });
+      if (!validPassword(body.next)) throw new RequestError(400, "নতুন পাসওয়ার্ড অন্তত ১০ অক্ষরের হবে।");
+      await storePassword(student.id, body.next);
+      sql.endOtherSessions.run(student.id, tokenHash);
+      return json(response, 200, { ok: true });
+    }
     if (path === "/parent-link") {
       if (method === "GET") {
         const link = sql.parentLink.get(student.id);

@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>অ্যাডমিন | প্রশ্নপাঠ</title>
+  <meta name="description" content="প্রশ্নপাঠ শিক্ষার্থী পাইলটের অ্যাডমিন অংশ।">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="assets/favicon.png" type="image/png" sizes="64x64">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&amp;family=Noto+Serif+Bengali:wght@700;800&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/premium.css">
+  <link rel="stylesheet" href="assets/student.css">
+  <meta name="referrer" content="no-referrer">
+  <script defer src="assets/app.js"></script>
+    <script defer src="assets/admin.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">মূল কনটেন্টে যান</a>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand brand-depth" href="index.html" aria-label="প্রশ্নপাঠ হোম"><img src="assets/logo-horizontal.png" alt="" width="613" height="160"></a>
+      <button class="nav-toggle" id="navToggle" type="button" aria-expanded="false" aria-controls="mainNav" hidden>মেনু</button>
+      <nav class="main-nav" id="mainNav" aria-label="প্রধান মেনু">
+        <a href="index.html">হোম</a>
+        <a href="question-bank.html">প্রশ্নব্যাংক</a>
+        <a href="notes.html">অধ্যায়ের নোট</a>
+        <a href="planner.html">পড়ার পরিকল্পনা</a>
+            <a href="vocabulary.html">শব্দভান্ডার</a>
+      </nav>
+    </div>
+  </header>
+  <main id="main" tabindex="-1" class="student-main admin-main">
+    <div class="wrap student-wrap">
+      <header class="student-heading">
+        <p class="student-class">শুধু প্রশ্নপাঠ টিমের জন্য</p>
+        <h1>অ্যাডমিন</h1>
+        <p>শিক্ষার্থী আইডির হিসাব, পাসওয়ার্ড রিসেট কোড আর আইডি ব্যবস্থাপনা।</p>
+      </header>
+      <p class="status-box" id="adminStatus" role="status">লোড হচ্ছে…</p>
+      <form class="panel student-card feedback-form admin-login" id="adminLogin" hidden>
+        <h2>অ্যাডমিন লগইন</h2>
+        <label for="adminPassword">অ্যাডমিন পাসওয়ার্ড</label>
+        <input id="adminPassword" type="password" required autocomplete="current-password" maxlength="200">
+        <div class="actions"><button class="btn btn-primary" type="submit">লগইন</button></div>
+      </form>
+      <section id="adminPanel" hidden>
+        <div class="student-account"><p>অ্যাডমিন হিসেবে লগইন আছেন</p><button class="text-button" id="adminLogout" type="button">লগআউট</button></div>
+        <div class="admin-totals" id="adminTotals"></div>
+        <section class="panel admin-reset-result" id="adminCodeBox" hidden aria-live="polite">
+          <h2>রিসেট কোড তৈরি হয়েছে</h2>
+          <p id="adminCodeFor"></p>
+          <p class="recovery-code" id="adminCode" dir="ltr"></p>
+          <p class="muted" id="adminCodeExpiry"></p>
+          <div class="actions">
+            <button type="button" class="btn btn-secondary" id="adminCodeCopy">বার্তা কপি করুন</button>
+            <button type="button" class="text-button" id="adminCodeClose">বন্ধ করুন</button>
+          </div>
+        </section>
+        <section class="panel admin-list" aria-labelledby="adminListTitle">
+          <div class="admin-list-head">
+            <h2 id="adminListTitle">শিক্ষার্থী আইডি</h2>
+            <label class="vocab-search">খুঁজুন<input type="search" id="adminSearch" placeholder="আইডি" dir="ltr"></label>
+          </div>
+          <div class="admin-table" role="region" tabindex="0" aria-label="শিক্ষার্থীর তালিকা">
+            <table>
+              <thead><tr><th scope="col">আইডি</th><th scope="col">কুইজ</th><th scope="col">শেষ সক্রিয়</th><th scope="col">তথ্য</th><th scope="col">কাজ</th></tr></thead>
+              <tbody id="adminRows"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+    </div>
+  </main>
+  
+</body>
+</html>
