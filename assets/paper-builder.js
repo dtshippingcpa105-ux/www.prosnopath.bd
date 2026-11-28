@@ -26,9 +26,9 @@
   let keyMode = false;
   const params = PB.params();
   const examSpecs = {
-    science: { chapters: 14, sets: 3, counts: [10, 5, 3], minutes: 90, pick: scienceQuestions },
-    math: { chapters: 11, sets: 2, counts: [30, 10, 5], minutes: 180, pick: mathQuestions },
-    bgs: { chapters: 13, sets: 1, counts: [10, 5, 3], minutes: 90, subjectCode: 150, pick: bgsQuestions }
+    science: { chapters: 14, sets: 5, counts: [10, 5, 3], minutes: 90, pick: scienceQuestions },
+    math: { chapters: 11, sets: 5, counts: [30, 10, 5], minutes: 180, pick: mathQuestions },
+    bgs: { chapters: 13, sets: 5, counts: [10, 5, 3], minutes: 90, subjectCode: 150, pick: bgsQuestions }
   };
   const sections = [
     { label: "বহুনির্বাচনি প্রশ্ন", marks: 1, accepts: (item) => item.type === "mcq" },
@@ -45,57 +45,94 @@
       && item.chapter === note.chapter && item.marks === section.marks && section.accepts(item));
   }
 
+  // বিজ্ঞান: ৫টি সেটে কোনো প্রশ্ন পুনরাবৃত্তি হবে না, আর প্রতিটি সেটে ১৪টি অধ্যায়ই থাকবে
+  let sciencePlan;
   function scienceQuestions(chapters, index) {
-    const rotated = rotate(chapters, index * 5);
-    const schedule = [rotated.slice(0, 10), rotated.slice(10).concat(rotated.slice(0, 1)), rotated.slice(3, 6)];
-    return schedule.map((notes, i) => notes.map((note) => {
-      const pool = questionPool(note, sections[i]);
-      return pool[index % pool.length];
+    if (!sciencePlan) {
+      const used = new Map();
+      const take = (note, section) => {
+        const key = note.chapter + "|" + section.label;
+        const n = used.get(key) ?? 0;
+        used.set(key, n + 1);
+        return questionPool(note, section)[n];
+      };
+      const creative = chapters.flatMap((note) => questionPool(note, sections[2]).map((item) => ({ note, item })));
+      sciencePlan = Array.from({ length: examSpecs.science.sets }, (_, set) => {
+        const picks = [set, set + 5, set + 10].map((i) => creative[i]).filter(Boolean);
+        const creativeChapters = new Set(picks.map(({ note }) => note.chapter));
+        const rest = rotate(chapters.filter((note) => !creativeChapters.has(note.chapter)), set * 3);
+        const mcqNotes = rest.slice(0, 10);
+        const shortNotes = rest.slice(10).concat(rotate(mcqNotes, set).slice(0, 5 - rest.slice(10).length));
+        return [mcqNotes.map((note) => take(note, sections[0])), shortNotes.map((note) => take(note, sections[1])), picks.map(({ item }) => item)];
+      });
+    }
+    return sciencePlan[index];
+  }
+
+  // সব সেট মিলিয়ে কোনো প্রশ্ন দুবার আসবে না; যে অধ্যায়ে প্রশ্ন বেশি বাকি, সেখান থেকে আগে নেওয়া হয়
+  const plans = new Map();
+  function balancedPlan(subject, chapters) {
+    if (plans.has(subject)) return plans.get(subject);
+    const spec = examSpecs[subject];
+    const pools = sections.map((section) => chapters.map((note) => questionPool(note, section)));
+    const used = sections.map(() => chapters.map(() => 0));
+    const plan = Array.from({ length: spec.sets }, (_, set) => sections.map((section, s) => {
+      const picked = [];
+      while (picked.length < spec.counts[s]) {
+        const order = chapters.map((_, i) => i)
+          .filter((i) => used[s][i] < pools[s][i].length)
+          .sort((x, y) => (pools[s][y].length - used[s][y]) - (pools[s][x].length - used[s][x])
+            || ((x - set * 3 + 99) % chapters.length) - ((y - set * 3 + 99) % chapters.length));
+        if (!order.length) break;
+        const counted = new Map(picked.map((item) => [item.chapter, 0]));
+        picked.forEach((item) => counted.set(item.chapter, counted.get(item.chapter) + 1));
+        const least = Math.min(...order.map((i) => counted.get(chapters[i].chapter) ?? 0));
+        const i = order.find((j) => (counted.get(chapters[j].chapter) ?? 0) === least);
+        picked.push(pools[s][i][used[s][i]++]);
+      }
+      const rank = new Map(chapters.map((note, i) => [note.chapter, i]));
+      return picked.sort((x, y) => rank.get(x.chapter) - rank.get(y.chapter));
     }));
+    plans.set(subject, plan);
+    return plan;
   }
 
   function mathQuestions(chapters, index) {
-    const mcqPlan = { arithmetic: [3, 3, 3], algebra: [3, 2, 2, 2], geometry: [3, 3, 2], statistics: [4] };
-    const mcq = Object.entries(mcqPlan).flatMap(([strand, allocation]) => {
-      const strandChapters = rotate(chapters.filter((note) => note.strand === strand), index);
-      return strandChapters.flatMap((note, i) =>
-        questionPool(note, sections[0]).slice(index * 4, index * 4 + allocation[i]));
-    });
-    const short = rotate(chapters, index * 5).slice(0, 10)
-      .map((note) => questionPool(note, sections[1])[index]);
-    const creativePlan = [[1, 2, 4, 8, 11], [3, 5, 6, 9, 11]];
-    const creative = creativePlan[index].map((number) =>
-      questionPool(chapters[number - 1], sections[2])[number === 11 ? index : 0]);
-    return [mcq, short, creative];
+    return balancedPlan("math", chapters)[index];
   }
 
-  function bgsQuestions(chapters) {
-    const creative = new Set([
-      "বাংলাদেশের মুক্তিযুদ্ধ ও গণতান্ত্রিক সংগ্রাম", "সামাজিকীকরণ", "বাংলাদেশে জলবায়ু ও দুর্যোগ মোকাবিলা"
-    ]);
-    const short = new Set([
-      "ঔপনিবেশিক যুগ ও বাংলার স্বাধীনতা সংগ্রাম", "বাংলাদেশের অর্থনীতি", "বাংলাদেশ : রাষ্ট্র ও সরকার ব্যবস্থা",
-      "বাংলাদেশের বিভিন্ন নৃগোষ্ঠী", "বাংলাদেশ এবং বিভিন্ন আঞ্চলিক ও আন্তর্জাতিক সহযোগী সংস্থা"
-    ]);
-    const chapterGroups = [
-      chapters.filter(({ chapter }) => !creative.has(chapter)),
-      chapters.filter(({ chapter }) => short.has(chapter)),
-      chapters.filter(({ chapter }) => creative.has(chapter))
-    ];
-    const answerPositions = [1, 3, 0, 2, 1, 0, 3, 2, 0, 1];
-    return chapterGroups.map((group, sectionIndex) => group.map((topic, itemIndex) => {
-      const item = questionPool(topic, sections[sectionIndex])[0];
-      if (!item) return;
-      const question = { ...item, reference: item.chapter + " · ২০২৬ পাঠ্যবই, পৃ. " + topic.reference.pages };
-      if (item.type === "mcq") {
-        const options = [...item.options];
-        const [correct] = options.splice(item.answer, 1);
-        question.answer = answerPositions[itemIndex];
-        options.splice(question.answer, 0, correct);
-        question.options = options;
-      }
-      return question;
-    }));
+  // বাংলাদেশ ও বিশ্বপরিচয়: প্রতি সেটে ১৩টি অধ্যায়ই আসবে, সেটগুলোর মধ্যে প্রশ্ন পুনরাবৃত্তি হবে না
+  let bgsPlan;
+  function bgsQuestions(chapters, index) {
+    if (!bgsPlan) {
+      const pools = sections.map((section) => chapters.map((topic) => questionPool(topic, section)));
+      const used = sections.map(() => chapters.map(() => 0));
+      const left = (s, i) => pools[s][i].length - used[s][i];
+      const answerPositions = [1, 3, 0, 2, 1, 0, 3, 2, 0, 1, 2, 3, 0];
+      const make = (s, i, n, set) => {
+        const item = pools[s][i][used[s][i]++];
+        if (!item) return;
+        const question = { ...item, reference: item.chapter + " · ২০২৬ পাঠ্যবই, পৃ. " + chapters[i].reference.pages };
+        if (item.type === "mcq") {
+          const options = [...item.options];
+          const [correct] = options.splice(item.answer, 1);
+          question.answer = answerPositions[(n + set * 3) % answerPositions.length];
+          options.splice(question.answer, 0, correct);
+          question.options = options;
+        }
+        return question;
+      };
+      const byLeft = (s, set) => chapters.map((_, i) => i).sort((x, y) => left(s, y) - left(s, x)
+        || ((x - set * 3 + 39) % 13) - ((y - set * 3 + 39) % 13));
+      bgsPlan = Array.from({ length: examSpecs.bgs.sets }, (_, set) => {
+        const creative = byLeft(2, set).slice(0, 3).sort((x, y) => x - y);
+        const mcq = chapters.map((_, i) => i).filter((i) => !creative.includes(i));
+        const short = byLeft(1, set).slice(0, 5).sort((x, y) => x - y);
+        return [mcq.map((i, n) => make(0, i, n, set)), short.map((i, n) => make(1, i, n, set)),
+          creative.map((i, n) => make(2, i, n, set))];
+      });
+    }
+    return bgsPlan[index];
   }
 
   function scholarshipSet(subject, chapters, index) {
@@ -120,7 +157,8 @@
     if (chapters.length !== spec.chapters) return [];
     return Array.from({ length: spec.sets }, (_, i) => scholarshipSet(subject, chapters, i)).filter(Boolean);
   });
-  availableSets.unshift(CLASS_EIGHT_BANGLA_MODEL, CLASS_EIGHT_ENGLISH_MODEL);
+  availableSets.unshift(CLASS_EIGHT_BANGLA_MODEL, ...CLASS_EIGHT_BANGLA_MODELS,
+    CLASS_EIGHT_ENGLISH_MODEL, ...CLASS_EIGHT_ENGLISH_MODELS);
   const exam = params.get("exam");
   const model = availableSets.find(({ subject, number }) => exam === subject + "-britti-" + number);
   const packSets = ["bangla", "english", "math", "science", "bgs"]

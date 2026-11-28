@@ -691,3 +691,11 @@
 .premium-home .premium-subjects .tool-card:is(:hover, :focus-visible) { background: none; box-shadow: none; transform: none; border-bottom-color: #2848a8; }
 .premium-home .premium-subjects .tool-card:is(:hover, :focus-visible) h3 { color: #2848a8; }
 @media (max-width: 700px) { .premium-home .premium-subjects { grid-template-columns: 1fr; } .premium-home .premium-subjects .subject-count { font-size: .85rem; } }
+
+.model-sets{list-style:none;margin:.6rem 0 0;padding:0;display:grid;gap:.35rem}
+.model-sets li{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;padding:.35rem 0;border-bottom:1px dotted currentColor;border-bottom-color:color-mix(in srgb,currentColor 30%,transparent)}
+.model-sets li:last-child{border-bottom:0}
+.model-sets span{font-weight:600;min-width:3.5rem}
+.model-sets a{color:inherit;text-decoration:none;padding:.2rem .7rem;border:1px solid color-mix(in srgb,currentColor 45%,transparent);border-radius:999px;font-size:.92em}
+.model-sets a:hover,.model-sets a:focus-visible{background:color-mix(in srgb,currentColor 14%,transparent)}
+.model-sets-heading{margin-top:1.5rem;color:inherit}
