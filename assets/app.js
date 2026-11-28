@@ -213,3 +213,16 @@ const PB = {
   mobile.addEventListener("change", () => setOpen(false));
   setOpen(false);
 })();
+
+// প্রশ্নপাঠ সহায়কের ভাসমান বোতাম (শিক্ষার্থীদের পড়ার পাতায়)
+(() => {
+  const page = location.pathname.split("/").pop() || "index.html";
+  const show = ["index.html", "notes.html", "question-bank.html", "quiz.html", "visual.html", "vocabulary.html", "planner.html", "search.html", "student.html"];
+  if (!show.includes(page) || !document.querySelector(".site-header")) return;
+  const link = document.createElement("a");
+  link.className = "assistant-fab";
+  link.href = "assistant.html";
+  link.innerHTML = '<span aria-hidden="true">✦</span> সহায়ক';
+  link.setAttribute("aria-label", "প্রশ্নপাঠ সহায়কের কাছে প্রশ্ন করুন");
+  document.body.append(link);
+})();
