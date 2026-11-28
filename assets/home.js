@@ -6,7 +6,7 @@
   const motion = matchMedia("(prefers-reduced-motion: reduce)");
   const finePointer = matchMedia("(hover: hover) and (pointer: fine)");
   const glyphs = {
-    bangla: "অ", bangla1: "অ", english: "Aa", english1: "Aa", math: "∑", highermath1: "∫",
+    bangla: "অ", bangla1: "অ", bangla2: "অ", english: "Aa", english1: "Aa", english2: "Aa", math: "∑", highermath1: "∫",
     science: "⚗", physics: "λ", physics1: "λ", chemistry: "⚗", chemistry1: "⚗",
     biology: "❋", bgs: "◎", religion: "✧", ict: "</>", agriculture: "❧"
   };
