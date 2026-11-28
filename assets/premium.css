@@ -16,7 +16,7 @@
 .header-inner { min-height: 74px; }
 .brand-depth { perspective: 400px; }
 .brand-depth img {
-  width: 106px;
+  width: 172px;
   filter: drop-shadow(0 3px 2px #1523542b);
   transition: transform 220ms ease, filter 220ms ease;
 }
