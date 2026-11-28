@@ -48,21 +48,17 @@
   });
   renderSubjects();
 
-  const questions = entries.flatMap((entry) => [...entry.mcq, ...entry.short]);
-  const countSource = (source) => questions.filter((item) => PB.questionSource(item) === source).length;
   const stats = {
-    questions: questions.length,
-    subjects: new Set(entries.map((entry) => entry.subjectId)).size,
+    mcq: entries.reduce((sum, entry) => sum + entry.mcq.length, 0),
+    written: entries.reduce((sum, entry) => sum + entry.short.length, 0),
     resources: STUDY_CHAPTERS.length,
-    board: countSource("board")
+    subjects: new Set(entries.map((entry) => entry.subjectId)).size
   };
-  PB.id("homeBoardQuestions").textContent = stats.board
-    ? PB.bn(stats.board) + "টি যাচাইকৃত বোর্ড প্রশ্ন আছে।"
-    : "যাচাইকৃত বোর্ড প্রশ্ন এখনো যোগ করা হয়নি।";
-  const nctbCount = countSource("nctb");
-  PB.id("homeNctbQuestions").textContent = nctbCount
-    ? PB.bn(nctbCount) + "টি এনসিটিবি প্রশ্ন দেখুন"
-    : "এনসিটিবি প্রশ্ন এখনো যোগ করা হয়নি";
+  // তাকের প্রতিটি বইয়ে সেই শ্রেণির বিষয় ও অধ্যায়ের সংখ্যা
+  for (const meta of root.querySelectorAll("[data-class-meta]")) {
+    const own = entries.filter((entry) => entry.classId === meta.dataset.classMeta);
+    if (own.length) meta.textContent = PB.bn(new Set(own.map((entry) => entry.subjectId)).size) + "টি বিষয় · " + PB.bn(own.length) + "টি অধ্যায়";
+  }
   const statsBox = root.querySelector(".premium-stats");
   const counters = Object.entries(stats).map(([name, total]) => {
     const counter = statsBox.querySelector('[data-stat="' + name + '"]');
@@ -88,14 +84,6 @@
       requestAnimationFrame(frame);
     }, { threshold: .35 });
     observer.observe(statsBox);
-    const sectionObserver = new IntersectionObserver((sections) => {
-      for (const section of sections) {
-        if (!section.isIntersecting) continue;
-        sectionObserver.unobserve(section.target);
-        if (!motion.matches && section.boundingClientRect.top > 0) section.target.classList.add("section-enter");
-      }
-    }, { threshold: .12 });
-    root.querySelectorAll(".premium-section .wrap").forEach((section) => sectionObserver.observe(section));
   }
 
   const preview = root.querySelector("[data-learning-preview]");
@@ -157,14 +145,5 @@
   scene.addEventListener("pointerleave", () => {
     pointerOrigin = undefined;
     reset(scene, "scene");
-  });
-  const cardSelector = ".class-card, .tool-card";
-  root.addEventListener("pointermove", (event) => {
-    const card = event.target.closest(cardSelector);
-    if (card && finePointer.matches && !motion.matches) tilt(event, card, "tilt", 11);
-  });
-  root.addEventListener("pointerout", (event) => {
-    const card = event.target.closest(cardSelector);
-    if (card && !card.contains(event.relatedTarget)) reset(card, "tilt");
   });
 })();

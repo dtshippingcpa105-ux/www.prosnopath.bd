@@ -12,6 +12,8 @@ const types = {
   css: "text/css; charset=utf-8",
   png: "image/png",
   jpg: "image/jpeg",
+  woff: "font/woff",
+  woff2: "font/woff2",
   txt: "text/plain; charset=utf-8",
   xml: "application/xml; charset=utf-8"
 };
@@ -122,7 +124,7 @@ const server = createServer(hosted ? { headersTimeout: 10_000, requestTimeout: 2
   const file = path === "/" ? "index.html" : path.slice(1);
   const extension = file.split(".").at(-1);
   const pilotPage = file === "student.html" || file === "student-model.html" || file === "parent-view.html" || file === "admin.html" || file === "teacher-hub.html";
-  if ((studentPilot || !pilotPage) && /^(?:assets\/)?[a-z\d-]+\.(?:html|js|css|png|jpg)$/.test(file) || file === "robots.txt" || file === "sitemap.xml") {
+  if ((studentPilot || !pilotPage) && (/^(?:assets\/)?[a-z\d-]+\.(?:html|js|css|png|jpg)$/.test(file) || /^assets\/fonts\/[a-z\d-]+\.woff2?$/.test(file)) || file === "robots.txt" || file === "sitemap.xml") {
     try {
       const entry = await cached(file, extension);
       const versioned = extension !== "html" && new URL(request.url, "http://x").searchParams.get("v") === entry.version;

@@ -21,6 +21,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&amp;family=Noto+Serif+Bengali:wght@700&amp;display=swap" rel="stylesheet">
+  <link rel="preload" href="assets/fonts/tiro-bangla-hero.woff" as="font" type="font/woff" crossorigin>
   <link rel="stylesheet" href="assets/style.css">
   <link rel="stylesheet" href="assets/page-themes.css">
   <link rel="stylesheet" href="assets/premium.css">
@@ -258,22 +259,22 @@
     </section>
     <section class="premium-stats wrap" aria-label="প্রশ্নপাঠের তথ্য" hidden>
       <dl>
-        <div><dt>মোট প্রশ্ন</dt><dd data-stat="questions"></dd></div>
+        <div><dt>বহুনির্বাচনি প্রশ্ন</dt><dd data-stat="mcq"></dd></div>
+        <div><dt>লিখিত প্রশ্ন</dt><dd data-stat="written"></dd></div>
+        <div><dt>অধ্যায়ের নোট</dt><dd data-stat="resources"></dd></div>
         <div><dt>বিষয়</dt><dd data-stat="subjects"></dd></div>
-        <div><dt>অধ্যায়ভিত্তিক নোট</dt><dd data-stat="resources"></dd></div>
-        <div><dt>যাচাইকৃত বোর্ড প্রশ্ন</dt><dd data-stat="board"></dd></div>
       </dl>
     </section>
     <section class="section premium-section" id="classes">
       <div class="wrap">
-        <div class="section-head"><h2>আপনার শ্রেণি বেছে নিন</h2><p>শ্রেণি থেকে বিষয় ও অনুশীলনীতে যান।</p></div>
-        <div class="class-grid" data-home-classes>
-          <a class="class-card" href="question-bank.html?class=c5"><span class="class-badge" aria-hidden="true">৫</span><span><strong>৫ম শ্রেণি</strong><small>প্রাথমিক</small></span></a>
-          <a class="class-card" href="question-bank.html?class=c6"><span class="class-badge" aria-hidden="true">৬</span><span><strong>৬ষ্ঠ শ্রেণি</strong><small>মাধ্যমিক</small></span></a>
-          <a class="class-card" href="question-bank.html?class=c7"><span class="class-badge" aria-hidden="true">৭</span><span><strong>৭ম শ্রেণি</strong><small>মাধ্যমিক</small></span></a>
-          <a class="class-card" href="question-bank.html?class=c8"><span class="class-badge" aria-hidden="true">৮</span><span><strong>৮ম শ্রেণি</strong><small>মাধ্যমিক</small></span></a>
-          <a class="class-card" href="question-bank.html?class=c9"><span class="class-badge" aria-hidden="true">৯–১০</span><span><strong>৯ম–১০ম শ্রেণি</strong><small>এসএসসি</small></span></a>
-          <a class="class-card" href="question-bank.html?class=c11"><span class="class-badge" aria-hidden="true">১১–১২</span><span><strong>১১শ–১২শ শ্রেণি</strong><small>এইচএসসি</small></span></a>
+        <div class="section-head"><h2>আপনার শ্রেণি বেছে নিন</h2><p>তাক থেকে নিজের শ্রেণির বইটি তুলে নিন; ভেতরে বিষয় ও অধ্যায় ধরে প্রশ্ন আছে।</p></div>
+        <div class="shelf" data-home-classes>
+          <a class="book book-c5" href="question-bank.html?class=c5"><span class="book-num" aria-hidden="true">৫</span><span class="book-title">৫ম শ্রেণি</span><span class="book-stage">প্রাথমিক</span><span class="book-meta" data-class-meta="c5"></span></a>
+          <a class="book book-c6" href="question-bank.html?class=c6"><span class="book-num" aria-hidden="true">৬</span><span class="book-title">৬ষ্ঠ শ্রেণি</span><span class="book-stage">মাধ্যমিক</span><span class="book-meta" data-class-meta="c6"></span></a>
+          <a class="book book-c7" href="question-bank.html?class=c7"><span class="book-num" aria-hidden="true">৭</span><span class="book-title">৭ম শ্রেণি</span><span class="book-stage">মাধ্যমিক</span><span class="book-meta" data-class-meta="c7"></span></a>
+          <a class="book book-c8" href="question-bank.html?class=c8"><span class="book-num" aria-hidden="true">৮</span><span class="book-title">৮ম শ্রেণি</span><span class="book-stage">মাধ্যমিক</span><span class="book-meta" data-class-meta="c8"></span></a>
+          <a class="book book-c9" href="question-bank.html?class=c9"><span class="book-num" aria-hidden="true">৯–১০</span><span class="book-title">৯ম–১০ম শ্রেণি</span><span class="book-stage">এসএসসি</span><span class="book-meta" data-class-meta="c9"></span></a>
+          <a class="book book-c11" href="question-bank.html?class=c11"><span class="book-num" aria-hidden="true">১১–১২</span><span class="book-title">১১শ–১২শ শ্রেণি</span><span class="book-stage">এইচএসসি</span><span class="book-meta" data-class-meta="c11"></span></a>
         </div>
       </div>
     </section>
@@ -289,70 +290,112 @@
       </div>
     </section>
     <section class="section premium-section resource-section" id="resources"><div class="wrap">
-      <div class="section-head"><h2>শেখার উপকরণ</h2></div>
-      <div class="tool-grid">
-        <article class="tool-card"><span class="tool-icon" aria-hidden="true">▥</span><h3>এনসিটিবি উপকরণ</h3><p>শ্রেণি অনুযায়ী সরকারি পাঠ্যবই দেখুন।</p><div class="actions resource-actions"><a class="card-link" href="textbooks.html">পাঠ্যবই</a><a class="card-link" href="question-bank.html?source=nctb" id="homeNctbQuestions">এনসিটিবি প্রশ্নের অবস্থা</a></div></article>
-        <a class="tool-card" href="question-bank.html?source=board"><span class="tool-icon" aria-hidden="true">▤</span><h3>বিগত বোর্ড প্রশ্ন</h3><p id="homeBoardQuestions">উৎস অনুযায়ী সংগ্রহের অবস্থা দেখুন।</p><span class="card-link">সংগ্রহের অবস্থা দেখুন</span></a>
-        <a class="tool-card" href="question-bank.html"><span class="tool-icon" aria-hidden="true">❔</span><h3>প্রশ্নব্যাংক</h3><p>বহুনির্বাচনী, সংক্ষিপ্ত ও সৃজনশীল প্রশ্ন নিয়ে প্রস্তুতি নিন।</p><span class="card-link">প্রশ্ন দেখুন</span></a>
-        <a class="tool-card" href="notes.html"><span class="tool-icon" aria-hidden="true">≡</span><h3>অধ্যায়ভিত্তিক নোট</h3><p>মূল ধারণা, তুলনামূলক ছক ও সমাধানসহ উদাহরণ পড়ুন।</p><span class="card-link">নোট পড়ুন</span></a>
-        <a class="tool-card" href="assistant.html"><span class="tool-icon" aria-hidden="true">✦</span><h3>প্রশ্নপাঠ সহায়ক</h3><p>পড়ার প্রশ্ন জিজ্ঞেস করুন, কুইজ নিন, ইঙ্গিত ও পড়ার পরামর্শ পান। সম্পূর্ণ বিনামূল্যে।</p><span class="card-link">সহায়কের সাথে কথা বলুন</span></a>
-        <a class="tool-card" href="visual.html"><span class="tool-icon" aria-hidden="true">◉</span><h3>চিত্রে শিখি</h3><p>কোষ, ফুল, আলো, বর্তনী, ত্রিভুজের চিত্র দেখে শিখুন, তারপর নাম মিলিয়ে যাচাই করুন।</p><span class="card-link">চিত্র দেখুন</span></a>
-        <a class="tool-card" href="paper-builder.html"><span class="tool-icon" aria-hidden="true">▧</span><h3>মডেল প্রশ্নপত্র তৈরি</h3><p>পূর্ণমানসহ প্রশ্নপত্র ও আলাদা উত্তরমালা সাজান।</p><span class="card-link">প্রশ্নপত্র সাজান</span></a>
-        <a class="tool-card" href="parents.html"><span class="tool-icon" aria-hidden="true">◎</span><h3>অভিভাবক কর্নার</h3><p>পড়ার অভ্যাস, পরীক্ষা ও অনলাইন নিরাপত্তায় সহায়তা করুন।</p><span class="card-link">পরামর্শ পড়ুন</span></a>
+      <div class="section-head"><h2>শেখার উপকরণ</h2><p>প্রশ্নপাঠের সব কিছু তিন ধাপে সাজানো।</p></div>
+      <div class="path-grid">
+        <section class="path path-learn" aria-labelledby="path-path-learn">
+          <h3 id="path-path-learn">শিখুন</h3>
+          <p class="path-intro">পাঠ্যবইয়ের অধ্যায় ধরে বুঝে পড়ুন।</p>
+          <ul class="path-list">
+            <li><a href="notes.html"><strong>অধ্যায়ভিত্তিক নোট</strong><span>মূল ধারণা, ছক ও সমাধানসহ উদাহরণ</span></a></li>
+            <li><a href="visual.html"><strong>চিত্রে শিখি</strong><span>চিত্রের অংশ চিনে নাম মিলিয়ে যাচাই</span></a></li>
+            <li><a href="textbooks.html"><strong>এনসিটিবি পাঠ্যবই</strong><span>শ্রেণি অনুযায়ী সরকারি বইয়ের লিংক</span></a></li>
+            <li><a href="vocabulary.html"><strong>শব্দভান্ডার</strong><span>অর্থ, উদাহরণ ও উচ্চারণসহ ইংরেজি শব্দ</span></a></li>
+          </ul>
+        </section>
+        <section class="path path-practice" aria-labelledby="path-path-practice">
+          <h3 id="path-path-practice">অনুশীলন করুন</h3>
+          <p class="path-intro">প্রশ্ন দিয়ে নিজেকে যাচাই করুন।</p>
+          <ul class="path-list">
+            <li><a href="question-bank.html"><strong>প্রশ্নব্যাংক</strong><span>বহুনির্বাচনি, সংক্ষিপ্ত ও সৃজনশীল প্রশ্ন</span></a></li>
+            <li><a href="quiz.html"><strong>অধ্যায়ভিত্তিক কুইজ</strong><span>সময় বেঁধে বা নিজের গতিতে উত্তর দিন</span></a></li>
+            <li><a href="paper-builder.html"><strong>প্রশ্নপত্র তৈরি</strong><span>পূর্ণমান ও আলাদা উত্তরমালাসহ প্রিন্ট</span></a></li>
+            <li><a href="scholarship.html"><strong>বৃত্তি প্রস্তুতি</strong><span>৮ম শ্রেণির বৃত্তির মডেল প্রশ্নপত্র</span></a></li>
+          </ul>
+        </section>
+        <section class="path path-forward" aria-labelledby="path-path-forward">
+          <h3 id="path-path-forward">এগিয়ে যান</h3>
+          <p class="path-intro">পরিকল্পনা করে নিয়মিত উন্নতি করুন।</p>
+          <ul class="path-list">
+            <li><a href="assistant.html"><strong>প্রশ্নপাঠ সহায়ক</strong><span>পড়ার প্রশ্ন করুন, ইঙ্গিত ও পরামর্শ নিন</span></a></li>
+            <li><a href="planner.html"><strong>পড়ার পরিকল্পনা</strong><span>পরীক্ষার তারিখ ধরে দিনভিত্তিক রুটিন</span></a></li>
+            <li><a href="student.html"><strong>আমার অগ্রগতি</strong><span>স্কোর, ভুলের খাতা ও ধারাবাহিকতা</span></a></li>
+            <li><a href="parents.html"><strong>অভিভাবক কর্নার</strong><span>সন্তানের পড়াশোনায় পাশে থাকার উপায়</span></a></li>
+          </ul>
+        </section>
       </div>
     </div></section>
-    <section class="section premium-section"><div class="wrap">
-      <div class="practice-band">
-        <div><h2>প্রস্তুতি যাচাই করুন</h2><p>সময় বেঁধে বা নিজের গতিতে কুইজ দিন। শেষে ভুল ও বাদ পড়া উত্তর দেখুন।</p></div>
-        <div class="actions">
-          <a class="btn btn-primary" href="quiz.html">কুইজ বেছে নিন</a>
-          <a class="btn btn-secondary" href="scholarship.html">৮ম শ্রেণির বৃত্তি প্রস্তুতির পথ</a>
-          <a class="btn btn-secondary" href="paper-builder.html?exam=science-britti-1">৮ম শ্রেণির বিজ্ঞান · বৃত্তি মডেল সেট</a>
-          <a class="btn btn-secondary" href="paper-builder.html?exam=math-britti-1">৮ম শ্রেণির গণিত · বৃত্তি মডেল সেট</a>
+    <section class="section premium-section focus-section"><div class="wrap focus-grid">
+      <article class="focus focus-ssc">
+        <h2>এসএসসি প্রস্তুতি</h2>
+        <p>৯ম–১০ম শ্রেণির পদার্থবিজ্ঞান, রসায়ন, জীববিজ্ঞান ও গণিত: পাঠ্যবইয়ের প্রতিটি অধ্যায়ের নোট, বহুনির্বাচনি ও লিখিত প্রশ্ন।</p>
+        <div class="focus-links">
+          <a href="notes.html?class=c9&amp;subject=physics">পদার্থবিজ্ঞান</a>
+          <a href="notes.html?class=c9&amp;subject=chemistry">রসায়ন</a>
+          <a href="notes.html?class=c9&amp;subject=biology">জীববিজ্ঞান</a>
+          <a href="notes.html?class=c9&amp;subject=math">গণিত</a>
         </div>
-      </div>
+      </article>
+      <article class="focus focus-britti">
+        <h2>৮ম শ্রেণির বৃত্তি প্রস্তুতি</h2>
+        <p>বিষয়ভিত্তিক প্রস্তুতির পথ আর সময় ধরে লেখার জন্য মডেল প্রশ্নপত্র।</p>
+        <div class="focus-links">
+          <a href="scholarship.html">প্রস্তুতির পথ</a>
+          <a href="paper-builder.html?exam=science-britti-1">বিজ্ঞান মডেল সেট</a>
+          <a href="paper-builder.html?exam=math-britti-1">গণিত মডেল সেট</a>
+        </div>
+      </article>
     </div></section>
     <section class="section premium-section faq-section" id="faq" aria-labelledby="faqTitle"><div class="wrap">
       <div class="section-head"><h2 id="faqTitle">সচরাচর জিজ্ঞাসা</h2><p>প্রশ্নপাঠ ব্যবহার নিয়ে শিক্ষার্থী, শিক্ষক ও অভিভাবকদের সাধারণ প্রশ্ন।</p></div>
       <div class="faq-list">
-        <details class="faq-item faq-green" open>
+        <details class="faq-item" open>
           <summary><span class="faq-icon" aria-hidden="true">?</span><span class="faq-q">প্রশ্নপাঠে কোন কোন শ্রেণির প্রশ্ন আছে?</span><span class="faq-chevron" aria-hidden="true"></span></summary>
-          <div class="faq-a"><p>পঞ্চম শ্রেণি থেকে এইচএসসি পর্যন্ত ৪২টি শ্রেণি–বিষয়ে অধ্যায়ভিত্তিক অনুশীলন সেট আছে। অষ্টম শ্রেণির বিজ্ঞান, গণিত, বাংলাদেশ ও বিশ্বপরিচয়, বাংলা ও ইংরেজিতে সবচেয়ে বেশি প্রশ্ন, নোট এবং বৃত্তির মডেল প্রশ্নপত্র রয়েছে। নতুন সেট নিয়মিত যোগ হচ্ছে।</p><a class="faq-link" href="question-bank.html">প্রশ্নব্যাংক দেখুন →</a></div>
+          <div class="faq-a"><p>পঞ্চম শ্রেণি থেকে এইচএসসি পর্যন্ত অধ্যায়ভিত্তিক অনুশীলন আছে। ৯ম–১০ম শ্রেণির পদার্থবিজ্ঞান, রসায়ন, জীববিজ্ঞান ও গণিতের পাঠ্যবইয়ের সব অধ্যায় এবং ৮ম শ্রেণির বিজ্ঞান, গণিত, বাংলাদেশ ও বিশ্বপরিচয়, বাংলা ও ইংরেজিতে সবচেয়ে বেশি নোট ও প্রশ্ন রয়েছে। নতুন অধ্যায় নিয়মিত যোগ হচ্ছে।</p><a class="faq-link" href="question-bank.html">প্রশ্নব্যাংক দেখুন →</a></div>
         </details>
-        <details class="faq-item faq-blue">
+        <details class="faq-item">
           <summary><span class="faq-icon" aria-hidden="true">?</span><span class="faq-q">সাইট ব্যবহার করতে কি অ্যাকাউন্ট লাগে?</span><span class="faq-chevron" aria-hidden="true"></span></summary>
           <div class="faq-a"><p>না। প্রশ্নব্যাংক, কুইজ, নোট, পাঠ্যবই ও প্রশ্নপত্র তৈরি অ্যাকাউন্ট ছাড়াই ব্যবহার করা যায়। শুধু নিজের স্কোর ও অগ্রগতি সংরক্ষণ করতে চাইলে “আমার অগ্রগতি” থেকে শিক্ষার্থী আইডি খুলতে হয়। নতুন আইডি খুলতে আমন্ত্রণ কোড লাগে, আর বাস্তব নাম, ফোন বা ইমেইল দিতে হয় না।</p><a class="faq-link" href="student.html">আমার অগ্রগতি →</a></div>
         </details>
-        <details class="faq-item faq-purple">
+        <details class="faq-item">
           <summary><span class="faq-icon" aria-hidden="true">?</span><span class="faq-q">অধ্যায়ভিত্তিক কুইজ কীভাবে দেব?</span><span class="faq-chevron" aria-hidden="true"></span></summary>
           <div class="faq-a"><p>কুইজ পেজে শ্রেণি, বিষয় ও অধ্যায় বেছে নিন। প্রতি প্রশ্নে ৩০ সেকেন্ড সময় নিয়ে অথবা সময়সীমা ছাড়া নিজের গতিতে উত্তর দিতে পারবেন। শেষে স্কোরের সঙ্গে ভুল ও বাদ পড়া প্রশ্নের সঠিক উত্তর ও ব্যাখ্যা দেখা যায়।</p><a class="faq-link" href="quiz.html">কুইজ শুরু করুন →</a></div>
         </details>
-        <details class="faq-item faq-orange">
+        <details class="faq-item">
           <summary><span class="faq-icon" aria-hidden="true">?</span><span class="faq-q">নিজের মতো প্রশ্নপত্র বানিয়ে প্রিন্ট করা যায়?</span><span class="faq-chevron" aria-hidden="true"></span></summary>
           <div class="faq-a"><p>হ্যাঁ। “মডেল প্রশ্নপত্র তৈরি” পেজে একাধিক অধ্যায় থেকে MCQ ও লিখিত প্রশ্ন বাছাই করুন, নিজের প্রশ্ন যোগ করুন এবং পূর্ণমান ঠিক করুন। প্রশ্নপত্র ও উত্তরমালা আলাদাভাবে প্রিন্ট বা PDF হিসেবে সংরক্ষণ করা যায়, তাই শিক্ষক ও অভিভাবকরাও পরীক্ষা নিতে পারেন।</p><a class="faq-link" href="paper-builder.html">প্রশ্নপত্র তৈরি করুন →</a></div>
         </details>
-        <details class="faq-item faq-green">
+        <details class="faq-item">
           <summary><span class="faq-icon" aria-hidden="true">?</span><span class="faq-q">NCTB-এর পাঠ্যবই কোথায় পাব?</span><span class="faq-chevron" aria-hidden="true"></span></summary>
           <div class="faq-a"><p>পাঠ্যবই পেজে শ্রেণিভিত্তিক NCTB-এর সরকারি তালিকার লিংক এবং ২০২৪–২০২৫ সালের বইয়ের সংরক্ষিত আর্কাইভ আছে। পরীক্ষার প্রস্তুতিতে নিজের শিক্ষাবর্ষের পাঠ্যসূচি মিলিয়ে নিন।</p><a class="faq-link" href="textbooks.html">পাঠ্যবই দেখুন →</a></div>
         </details>
-        <details class="faq-item faq-blue">
+        <details class="faq-item">
           <summary><span class="faq-icon" aria-hidden="true">?</span><span class="faq-q">কোনো প্রশ্ন বা উত্তরে ভুল পেলে কী করব?</span><span class="faq-chevron" aria-hidden="true"></span></summary>
           <div class="faq-a"><p>প্রতিটি উত্তর ও ব্যাখ্যা যাচাই করে প্রকাশ করার চেষ্টা করা হয়। তবু ভুল চোখে পড়লে মতামত ও যোগাযোগ পেজ থেকে শ্রেণি, বিষয় ও প্রশ্নের লেখাসহ জানান। যাচাই করে দ্রুত সংশোধন করা হবে।</p><a class="faq-link" href="contact.html">ভুল জানান →</a></div>
         </details>
       </div>
     </div></section>
-    <script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "প্রশ্নপাঠে কোন কোন শ্রেণির প্রশ্ন আছে?", "acceptedAnswer": {"@type": "Answer", "text": "পঞ্চম শ্রেণি থেকে এইচএসসি পর্যন্ত ৪২টি শ্রেণি–বিষয়ে অধ্যায়ভিত্তিক অনুশীলন সেট আছে। অষ্টম শ্রেণির বিজ্ঞান, গণিত, বাংলাদেশ ও বিশ্বপরিচয়, বাংলা ও ইংরেজিতে সবচেয়ে বেশি প্রশ্ন, নোট এবং বৃত্তির মডেল প্রশ্নপত্র রয়েছে। নতুন সেট নিয়মিত যোগ হচ্ছে।"}}, {"@type": "Question", "name": "সাইট ব্যবহার করতে কি অ্যাকাউন্ট লাগে?", "acceptedAnswer": {"@type": "Answer", "text": "না। প্রশ্নব্যাংক, কুইজ, নোট, পাঠ্যবই ও প্রশ্নপত্র তৈরি অ্যাকাউন্ট ছাড়াই ব্যবহার করা যায়। শুধু নিজের স্কোর ও অগ্রগতি সংরক্ষণ করতে চাইলে “আমার অগ্রগতি” থেকে শিক্ষার্থী আইডি খুলতে হয়। নতুন আইডি খুলতে আমন্ত্রণ কোড লাগে, আর বাস্তব নাম, ফোন বা ইমেইল দিতে হয় না।"}}, {"@type": "Question", "name": "অধ্যায়ভিত্তিক কুইজ কীভাবে দেব?", "acceptedAnswer": {"@type": "Answer", "text": "কুইজ পেজে শ্রেণি, বিষয় ও অধ্যায় বেছে নিন। প্রতি প্রশ্নে ৩০ সেকেন্ড সময় নিয়ে অথবা সময়সীমা ছাড়া নিজের গতিতে উত্তর দিতে পারবেন। শেষে স্কোরের সঙ্গে ভুল ও বাদ পড়া প্রশ্নের সঠিক উত্তর ও ব্যাখ্যা দেখা যায়।"}}, {"@type": "Question", "name": "নিজের মতো প্রশ্নপত্র বানিয়ে প্রিন্ট করা যায়?", "acceptedAnswer": {"@type": "Answer", "text": "হ্যাঁ। “মডেল প্রশ্নপত্র তৈরি” পেজে একাধিক অধ্যায় থেকে MCQ ও লিখিত প্রশ্ন বাছাই করুন, নিজের প্রশ্ন যোগ করুন এবং পূর্ণমান ঠিক করুন। প্রশ্নপত্র ও উত্তরমালা আলাদাভাবে প্রিন্ট বা PDF হিসেবে সংরক্ষণ করা যায়, তাই শিক্ষক ও অভিভাবকরাও পরীক্ষা নিতে পারেন।"}}, {"@type": "Question", "name": "NCTB-এর পাঠ্যবই কোথায় পাব?", "acceptedAnswer": {"@type": "Answer", "text": "পাঠ্যবই পেজে শ্রেণিভিত্তিক NCTB-এর সরকারি তালিকার লিংক এবং ২০২৪–২০২৫ সালের বইয়ের সংরক্ষিত আর্কাইভ আছে। পরীক্ষার প্রস্তুতিতে নিজের শিক্ষাবর্ষের পাঠ্যসূচি মিলিয়ে নিন।"}}, {"@type": "Question", "name": "কোনো প্রশ্ন বা উত্তরে ভুল পেলে কী করব?", "acceptedAnswer": {"@type": "Answer", "text": "প্রতিটি উত্তর ও ব্যাখ্যা যাচাই করে প্রকাশ করার চেষ্টা করা হয়। তবু ভুল চোখে পড়লে মতামত ও যোগাযোগ পেজ থেকে শ্রেণি, বিষয় ও প্রশ্নের লেখাসহ জানান। যাচাই করে দ্রুত সংশোধন করা হবে।"}}]}</script>
+    <script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "প্রশ্নপাঠে কোন কোন শ্রেণির প্রশ্ন আছে?", "acceptedAnswer": {"@type": "Answer", "text": "পঞ্চম শ্রেণি থেকে এইচএসসি পর্যন্ত অধ্যায়ভিত্তিক অনুশীলন আছে। ৯ম–১০ম শ্রেণির পদার্থবিজ্ঞান, রসায়ন, জীববিজ্ঞান ও গণিতের পাঠ্যবইয়ের সব অধ্যায় এবং ৮ম শ্রেণির বিজ্ঞান, গণিত, বাংলাদেশ ও বিশ্বপরিচয়, বাংলা ও ইংরেজিতে সবচেয়ে বেশি নোট ও প্রশ্ন রয়েছে। নতুন অধ্যায় নিয়মিত যোগ হচ্ছে।"}}, {"@type": "Question", "name": "সাইট ব্যবহার করতে কি অ্যাকাউন্ট লাগে?", "acceptedAnswer": {"@type": "Answer", "text": "না। প্রশ্নব্যাংক, কুইজ, নোট, পাঠ্যবই ও প্রশ্নপত্র তৈরি অ্যাকাউন্ট ছাড়াই ব্যবহার করা যায়। শুধু নিজের স্কোর ও অগ্রগতি সংরক্ষণ করতে চাইলে “আমার অগ্রগতি” থেকে শিক্ষার্থী আইডি খুলতে হয়। নতুন আইডি খুলতে আমন্ত্রণ কোড লাগে, আর বাস্তব নাম, ফোন বা ইমেইল দিতে হয় না।"}}, {"@type": "Question", "name": "অধ্যায়ভিত্তিক কুইজ কীভাবে দেব?", "acceptedAnswer": {"@type": "Answer", "text": "কুইজ পেজে শ্রেণি, বিষয় ও অধ্যায় বেছে নিন। প্রতি প্রশ্নে ৩০ সেকেন্ড সময় নিয়ে অথবা সময়সীমা ছাড়া নিজের গতিতে উত্তর দিতে পারবেন। শেষে স্কোরের সঙ্গে ভুল ও বাদ পড়া প্রশ্নের সঠিক উত্তর ও ব্যাখ্যা দেখা যায়।"}}, {"@type": "Question", "name": "নিজের মতো প্রশ্নপত্র বানিয়ে প্রিন্ট করা যায়?", "acceptedAnswer": {"@type": "Answer", "text": "হ্যাঁ। “মডেল প্রশ্নপত্র তৈরি” পেজে একাধিক অধ্যায় থেকে MCQ ও লিখিত প্রশ্ন বাছাই করুন, নিজের প্রশ্ন যোগ করুন এবং পূর্ণমান ঠিক করুন। প্রশ্নপত্র ও উত্তরমালা আলাদাভাবে প্রিন্ট বা PDF হিসেবে সংরক্ষণ করা যায়, তাই শিক্ষক ও অভিভাবকরাও পরীক্ষা নিতে পারেন।"}}, {"@type": "Question", "name": "NCTB-এর পাঠ্যবই কোথায় পাব?", "acceptedAnswer": {"@type": "Answer", "text": "পাঠ্যবই পেজে শ্রেণিভিত্তিক NCTB-এর সরকারি তালিকার লিংক এবং ২০২৪–২০২৫ সালের বইয়ের সংরক্ষিত আর্কাইভ আছে। পরীক্ষার প্রস্তুতিতে নিজের শিক্ষাবর্ষের পাঠ্যসূচি মিলিয়ে নিন।"}}, {"@type": "Question", "name": "কোনো প্রশ্ন বা উত্তরে ভুল পেলে কী করব?", "acceptedAnswer": {"@type": "Answer", "text": "প্রতিটি উত্তর ও ব্যাখ্যা যাচাই করে প্রকাশ করার চেষ্টা করা হয়। তবু ভুল চোখে পড়লে মতামত ও যোগাযোগ পেজ থেকে শ্রেণি, বিষয় ও প্রশ্নের লেখাসহ জানান। যাচাই করে দ্রুত সংশোধন করা হবে।"}}]}</script>
   </main>
   <footer class="site-footer">
-    <div class="wrap footer-inner">
-      <a class="brand footer-brand" href="index.html" aria-label="প্রশ্নপাঠ হোম"><img src="assets/logo-horizontal.png" alt="" width="613" height="160"></a>
-      <nav aria-label="সহায়তা">
-        <a href="question-bank.html">প্রশ্নব্যাংক</a>
-        <a href="about.html">আমাদের সম্পর্কে</a>
-        <a href="about.html#privacy">গোপনীয়তা</a>
-        <a href="contact.html">মতামত ও যোগাযোগ</a>
+    <div class="wrap footer-grid">
+      <div class="footer-about">
+        <a class="brand footer-brand" href="index.html" aria-label="প্রশ্নপাঠ হোম"><img src="assets/logo-horizontal.png" alt="" width="613" height="160"></a>
+        <p>পঞ্চম শ্রেণি থেকে এইচএসসি পর্যন্ত পাঠ্যবইভিত্তিক বিনামূল্যের নোট, প্রশ্নব্যাংক ও অনুশীলন।</p>
+        <p class="footer-slogan">শিখুন অনুশীলন করুন এগিয়ে যান</p>
+      </div>
+      <nav class="footer-col" aria-labelledby="footLearn"><h2 id="footLearn">পড়াশোনা</h2>
+        <a href="notes.html">অধ্যায়ভিত্তিক নোট</a><a href="visual.html">চিত্রে শিখি</a><a href="textbooks.html">এনসিটিবি পাঠ্যবই</a><a href="vocabulary.html">শব্দভান্ডার</a>
       </nav>
-      <p class="copyright">© প্রশ্নপাঠ · শিখুন • অনুশীলন করুন • এগিয়ে যান</p>
+      <nav class="footer-col" aria-labelledby="footPractice"><h2 id="footPractice">অনুশীলন</h2>
+        <a href="question-bank.html">প্রশ্নব্যাংক</a><a href="quiz.html">অধ্যায়ভিত্তিক কুইজ</a><a href="paper-builder.html">প্রশ্নপত্র তৈরি</a><a href="assistant.html">প্রশ্নপাঠ সহায়ক</a>
+      </nav>
+      <nav class="footer-col" aria-labelledby="footAbout"><h2 id="footAbout">প্রশ্নপাঠ</h2>
+        <a href="about.html">আমাদের সম্পর্কে</a><a href="teachers.html">শিক্ষক কর্নার</a><a href="parents.html">অভিভাবক কর্নার</a><a href="contact.html">মতামত ও যোগাযোগ</a><a href="about.html#privacy">গোপনীয়তা</a>
+      </nav>
+    </div>
+    <div class="wrap footer-bottom">
+      <p>© ২০২৬ প্রশ্নপাঠ</p>
+      <p>কোনো প্রশ্ন বা উত্তরে ভুল পেলে <a href="contact.html">আমাদের জানান</a></p>
     </div>
   </footer>
 </body>

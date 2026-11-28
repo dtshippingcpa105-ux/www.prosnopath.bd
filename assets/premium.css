@@ -63,8 +63,10 @@
 .hero-range { margin-bottom: .8rem; color: #cedbff; font-weight: 600; }
 .premium-hero h1 {
   color: white;
-  font: 760 clamp(2.35rem, 5.5vw, 5rem)/1.02 system-ui, sans-serif;
-  letter-spacing: -.071em;
+  font: 400 clamp(2.5rem, 5.6vw, 5.1rem)/1.16 "Tiro Bangla Hero", "Noto Serif Bengali", serif;
+  font-synthesis: none;
+  letter-spacing: 0;
+  text-shadow: 0 2px 18px rgba(8, 12, 40, .35);
 }
 .premium-hero h1 em { color: #beb7ff; font-style: normal; }
 .premium-lead { max-width: 39ch; margin-top: 1.05rem; color: #e0e7ff; font-size: 1.09rem; }
@@ -557,3 +559,135 @@
   .study-light, .study-steam path, .study-twinkle circle { animation: none; }
   .study-letter { animation: none; opacity: .9; }
 }
+
+/* ── বইয়ের তাক: শ্রেণি বাছাই ── */
+.shelf {
+  --plank: #9a5b2c;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  align-items: end;
+  gap: clamp(.45rem, 1.2vw, .9rem);
+  padding: 0 clamp(.4rem, 2vw, 1.4rem) 1.15rem;
+  margin-top: 1.4rem;
+}
+.shelf::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 1.15rem;
+  border-radius: 4px;
+  background: linear-gradient(#b47440, var(--plank) 55%, #74431f);
+  box-shadow: 0 10px 18px -8px #5b331566;
+}
+.book {
+  --cover: #2848a8;
+  --ink: #fff;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 15.5rem;
+  padding: 1.1rem .9rem 1rem;
+  border-radius: 5px 10px 10px 5px;
+  background:
+    linear-gradient(90deg, rgba(0,0,0,.22) 0 7px, rgba(255,255,255,.14) 7px 9px, transparent 9px),
+    var(--cover);
+  color: var(--ink);
+  text-decoration: none;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.08), 0 6px 12px -6px rgba(15,26,61,.55);
+  transition: transform .22s ease, box-shadow .22s ease;
+}
+.book::before, .book::after {
+  content: "";
+  position: absolute;
+  inset-inline: 9px 0;
+  height: 2px;
+  background: rgba(255,255,255,.35);
+}
+.book::before { top: 2.2rem; }
+.book::after { bottom: 2.6rem; }
+.book:nth-child(1) { min-height: 14.2rem; }
+.book:nth-child(2) { min-height: 15.6rem; }
+.book:nth-child(3) { min-height: 15rem; }
+.book:nth-child(4) { min-height: 16.4rem; }
+.book:nth-child(5) { min-height: 17.4rem; }
+.book:nth-child(6) { min-height: 16.2rem; }
+.book-c5 { --cover: #2e7d4f; }
+.book-c6 { --cover: #a93a37; }
+.book-c7 { --cover: #1f6f8b; }
+.book-c8 { --cover: #e0a325; --ink: #2b1d04; }
+.book-c9 { --cover: #2848a8; }
+.book-c11 { --cover: #5b3496; }
+.book-num {
+  margin-top: 1.55rem;
+  font: 400 clamp(2.3rem, 4.2vw, 3.6rem)/1 "Tiro Bangla Hero", "Noto Serif Bengali", serif;
+}
+.book-title { margin-top: auto; font-weight: 700; font-size: 1.02rem; line-height: 1.3; }
+.book-stage { font-size: .88rem; opacity: .85; }
+.book-meta { min-height: 2.6rem; margin-top: .55rem; padding-top: .5rem; font-size: .8rem; line-height: 1.35; opacity: .9; }
+.book:is(:hover, :focus-visible) { transform: translateY(-12px); box-shadow: inset 0 0 0 1px rgba(255,255,255,.12), 0 18px 22px -10px rgba(15,26,61,.6); }
+.book:focus-visible { outline: 3px solid #f5b335; outline-offset: 3px; }
+
+/* ── তিন ধাপের উপকরণ ── */
+.path-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(1rem, 2.4vw, 1.6rem); margin-top: 1.2rem; }
+.path { --accent: #12306e; padding: 1.4rem 1.3rem .6rem; border-radius: 16px; background: #fff; border: 1px solid #dde4f3; border-top: 5px solid var(--accent); }
+.path-practice { --accent: #2848a8; }
+.path-forward { --accent: #6a5ae0; }
+.path h3 { margin: 0; color: var(--accent); font: 400 clamp(1.7rem, 2.6vw, 2.15rem)/1.15 "Tiro Bangla Hero", "Noto Serif Bengali", serif; }
+.path-intro { margin: .35rem 0 .7rem; color: var(--muted); font-size: .95rem; }
+.path-list { list-style: none; margin: 0; padding: 0; }
+.path-list li + li { border-top: 1px solid #e8ecf6; }
+.path-list a { display: grid; gap: .1rem; padding: .75rem .5rem; margin-inline: -.5rem; border-radius: 10px; color: var(--ink); text-decoration: none; }
+.path-list strong { font-size: 1.04rem; color: #14204a; }
+.path-list span { color: var(--muted); font-size: .9rem; line-height: 1.45; }
+.path-list a:is(:hover, :focus-visible) { background: #f2f5fd; }
+.path-list a:is(:hover, :focus-visible) strong { color: var(--accent); }
+
+/* ── এসএসসি ও বৃত্তি ── */
+.focus-grid { display: grid; grid-template-columns: 1.35fr 1fr; gap: clamp(1rem, 2.4vw, 1.6rem); }
+.focus { padding: clamp(1.4rem, 3.4vw, 2.2rem); border-radius: 18px; }
+.focus h2 { margin: 0 0 .5rem; font-size: clamp(1.45rem, 2.6vw, 1.9rem); }
+.focus p { margin: 0 0 1.2rem; max-width: 52ch; }
+.focus-ssc { background: linear-gradient(135deg, #0f1a3d, #2b2f78); color: #fff; }
+.focus-ssc h2 { color: #fff; }
+.focus-ssc p { color: #d9e0ff; }
+.focus-britti { background: #fff7e6; border: 1px solid #f1dfb2; }
+.focus-britti p { color: #5b4a24; }
+.focus-links { display: flex; flex-wrap: wrap; gap: .55rem; }
+.focus-links a { padding: .5rem .95rem; border-radius: 999px; font-weight: 600; text-decoration: none; }
+.focus-ssc .focus-links a { background: rgba(255,255,255,.1); color: #fff; border: 1px solid rgba(255,255,255,.28); }
+.focus-ssc .focus-links a:is(:hover, :focus-visible) { background: #f5b335; color: #1b1405; border-color: #f5b335; }
+.focus-britti .focus-links a { background: #fff; color: #7a5310; border: 1px solid #e8cf8f; }
+.focus-britti .focus-links a:is(:hover, :focus-visible) { background: #e0a325; color: #2b1d04; }
+
+/* প্রশ্নোত্তর: এক রঙের শান্ত নকশা */
+.faq-item { --faq-accent: #2848a8; --faq-soft: #e9eefc; border-left-width: 3px; }
+
+@media (max-width: 900px) {
+  .shelf { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 2.2rem; padding-bottom: 1rem; }
+  .shelf::after { display: none; }
+  .book, .book:nth-child(n) { min-height: 12.5rem; box-shadow: inset 0 0 0 1px rgba(255,255,255,.08), 0 12px 0 -4px #9a5b2c, 0 14px 12px -6px #5b331555; }
+  .path-grid, .focus-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 520px) {
+  .shelf { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .book-num { margin-top: 1.3rem; }
+}
+@media (prefers-reduced-motion: reduce) { .book { transition: none; } .book:is(:hover, :focus-visible) { transform: none; } }
+.book-num { white-space: nowrap; }
+.book-c9 .book-num, .book-c11 .book-num { font-size: clamp(1.75rem, 3vw, 2.75rem); }
+
+/* বিষয়: বইয়ের সূচিপত্রের মতো সারি */
+.premium-home .premium-subjects { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 clamp(1.2rem, 4vw, 3rem); }
+.premium-home .premium-subjects .tool-card {
+  display: flex; flex-direction: row; flex-wrap: nowrap; align-items: baseline; gap: .7rem; min-height: 0;
+  padding: .95rem .2rem; border: 0; border-bottom: 1px solid #dfe5f2; border-radius: 0;
+  background: none; box-shadow: none; transform: none;
+}
+.premium-home .premium-subjects .tool-icon { flex: none; width: auto; height: auto; padding: 0; background: none; border: 0; box-shadow: none; color: #2848a8; font-size: 1.15rem; }
+.premium-home .premium-subjects h3 { margin: 0; font-size: 1.12rem; white-space: nowrap; }
+.premium-home .premium-subjects .subject-count { flex: 1; display: flex; gap: .6rem; align-items: baseline; justify-content: flex-end; color: var(--muted); font-size: .92rem; white-space: nowrap; }
+.premium-home .premium-subjects .subject-count::before { content: ""; flex: 1; min-width: 1.5rem; border-bottom: 2px dotted #c7d0e6; transform: translateY(-.25em); }
+.premium-home .premium-subjects .tool-card:is(:hover, :focus-visible) { background: none; box-shadow: none; transform: none; border-bottom-color: #2848a8; }
+.premium-home .premium-subjects .tool-card:is(:hover, :focus-visible) h3 { color: #2848a8; }
+@media (max-width: 700px) { .premium-home .premium-subjects { grid-template-columns: 1fr; } .premium-home .premium-subjects .subject-count { font-size: .85rem; } }

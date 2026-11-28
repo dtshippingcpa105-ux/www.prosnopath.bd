@@ -1,3 +1,9 @@
+@font-face {
+  font-family: "Tiro Bangla Hero";
+  src: url("fonts/tiro-bangla-hero.woff") format("woff");
+  font-weight: 400;
+  font-display: swap;
+}
 
 :root {
   --navy: #152f61;
@@ -690,3 +696,19 @@ progress::-webkit-progress-value { background: var(--blue); }
 @media (max-width: 600px) { .assistant-fab { right: 12px; bottom: 12px; padding: .5rem .85rem; font-size: .9rem; } }
 @media print { .assistant-fab { display: none !important; } }
 @media (max-width: 600px) { .chat-avatar { display: none; } .chat-log { padding: .6rem; } .chat-bot .chat-bubble { max-width: 100%; } .assistant-intro h1 { font-size: 1.6rem; } }
+
+/* ফুটার */
+.site-footer { padding-block: 2.6rem 1.2rem; }
+.footer-grid { display: grid; grid-template-columns: 1.5fr repeat(3, minmax(0, 1fr)); gap: 2rem 2.4rem; }
+.footer-about p { margin: .9rem 0 0; max-width: 34ch; color: #c3cfe6; font-size: .95rem; line-height: 1.6; }
+.footer-about .footer-brand img { width: 170px; height: auto; }
+.footer-slogan { color: #f5c65b !important; font: 400 1.25rem/1.3 "Tiro Bangla Hero", "Noto Serif Bengali", serif !important; }
+.footer-col { display: flex; flex-direction: column; gap: .5rem; }
+.footer-col h2 { margin: 0 0 .35rem; color: #fff; font-size: 1rem; font-family: inherit; }
+.footer-col a { color: #c3cfe6; text-decoration: none; font-size: .95rem; }
+.footer-col a:is(:hover, :focus-visible) { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
+.footer-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem 1.5rem; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,.12); font-size: .88rem; color: #9fb0d0; }
+.footer-bottom p { margin: 0; }
+.footer-bottom a { color: #f5c65b; }
+@media (max-width: 860px) { .footer-grid { grid-template-columns: 1fr 1fr; } .footer-about { grid-column: 1 / -1; } }
+@media (max-width: 460px) { .footer-grid { grid-template-columns: 1fr; } }
