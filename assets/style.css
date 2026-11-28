@@ -554,3 +554,20 @@ progress::-webkit-progress-value { background: var(--blue); }
   .vocab-quiz-options { grid-template-columns: minmax(0, 1fr); }
 }
 @media (prefers-reduced-motion: reduce) { .vocab-front, .vocab-back { transition: none; } }
+
+/* নোটের উন্নতি */
+.note-tools { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .8rem; margin: .6rem 0 1rem; padding: .6rem .8rem; border-radius: 12px; background: #f3f6fd; }
+.note-tools span { margin-right: auto; color: var(--muted); font-weight: 600; }
+.note-tools .btn { min-height: 40px; }
+#noteRead[aria-pressed="true"] { background: #1f9d6b; border-color: #1f9d6b; color: #fff; }
+.note-important { padding: .35rem .5rem; border-radius: 8px; background: #fff6e5; }
+.note-star { display: inline-block; margin-right: .3rem; padding: 0 .45rem; border-radius: 999px; background: #f59e0b; color: #fff; font-size: .8rem; font-weight: 700; }
+.note-check { border-top: 4px solid #1f9d6b; padding-top: .6rem; }
+.note-check-item { margin: .9rem 0; }
+.note-check-item > p { margin-bottom: .2rem; }
+.note-check .option { font: inherit; cursor: pointer; width: 100%; }
+.note-check-explain { margin-top: .5rem; padding: .5rem .7rem; border-radius: 8px; background: #f3f6fd; }
+.note-check-score { font-weight: 700; color: var(--navy); }
+@media print {
+  body:has(.theme-notes) .site-header, body:has(.theme-notes) .site-footer, .note-tools, .note-check, .study-note .actions, .study-note nav { display: none !important; }
+}

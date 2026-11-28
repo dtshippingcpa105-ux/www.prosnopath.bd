@@ -101,3 +101,17 @@ node student-pilot/backup.mjs /data/students.sqlite /backups/students-2026-11-26
 ### `assets/parent-learning.jpg`
 
 > Photorealistic natural editorial photograph for a Bangladeshi education site, calm and encouraging. A Bangladeshi mother and her early-teen daughter sit next to each other at a modest wooden dining table in a lived-in home, quietly reading an open notebook together. The daughter points at one line and the mother listens with a relaxed supportive smile. Natural window light on the right, soft cream walls and sage details, warm amber sunlight. Medium-wide composition with both faces in the middle, hands naturally posed on the desk. A little breathing room above and around to crop for an illustrated panel. Everyday clothing, documentary realism, no visible text, no logos or watermarks, no school trophies. Landscape.
+
+## পর্যায় ১-এর নতুন ফিচার (নভেম্বর ২০২৬)
+
+| ফিচার | কোথায় | ফাইল |
+| --- | --- | --- |
+| এক ক্লিকে প্রশ্নপত্র | `paper-builder.html` | `assets/paper-builder.js` |
+| ভুলের খাতা থেকে অনুশীলন, অধ্যায়ভিত্তিক দক্ষতা | `student.html` | `assets/student.js`, `student-pilot/server.mjs` (`/mistakes/resolve`) |
+| শুধু ভুলগুলো আবার দেওয়া, ফলভিত্তিক পরামর্শ | `quiz.html` | `assets/quiz.js` |
+| পড়ার পরিকল্পনা | `planner.html` | `assets/planner.js` |
+| শব্দভান্ডার (১০০ শব্দ) | `vocabulary.html` | `vocab-data.js`, `assets/vocab.js` |
+| নোটে পড়ার সময়, পড়া শেষ চিহ্ন, ঝটপট যাচাই, প্রিন্ট | `notes.html` | `assets/notes.js` |
+
+- নোটের কোনো মূল ধারণাকে "পরীক্ষায় গুরুত্বপূর্ণ" চিহ্ন দিতে `study-data.js` বা বিষয়ের ডেটা ফাইলে সেই অধ্যায়ে `important: [0, 2]` যোগ করুন (`keyPoints`-এর ক্রমিক নম্বর, ০ থেকে শুরু)।
+- নতুন শব্দ যোগ করতে `vocab-data.js`-এ একই ধাঁচে `["word", "pos", "অর্থ", "Example sentence.", "synonym"]` লিখুন।
