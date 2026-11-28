@@ -22,6 +22,55 @@
       || '<tr><td colspan="5" class="muted">কোনো শিক্ষার্থী পাওয়া যায়নি।</td></tr>';
   }
 
+
+  // ---- শিক্ষক ও যাচাই ----
+  const tStatus = { pending: "অনুমোদনের অপেক্ষায়", approved: "অনুমোদিত", suspended: "স্থগিত" };
+  const letters = ["ক", "খ", "গ", "ঘ"];
+  const place = (item) => (CLASSES.find((c) => c.id === item.classId)?.name ?? item.classId) + " · " + (SUBJECTS[item.subjectId]?.name ?? item.subjectId);
+  async function loadTeachers() {
+    const data = await PB.studentRequest("/admin/teachers");
+    get("adminTeacherRows").innerHTML = data.teachers.map((t) => '<tr><th scope="row">' + PB.escape(t.name) + '<small dir="ltr">' + PB.escape(t.username) + '</small></th>'
+      + '<td>' + PB.escape([t.institution, t.subjects].filter(Boolean).join(" · ") || "—") + '</td>'
+      + '<td>' + PB.bn(t.approved) + ' / ' + PB.bn(t.questions) + '</td><td><div class="admin-tags"><span data-ok="'
+      + (t.status === "approved" ? "true" : t.status === "pending" ? "warn" : "false") + '">' + tStatus[t.status] + '</span></div></td><td><div class="admin-actions">'
+      + (t.status !== "approved" ? '<button type="button" class="btn btn-secondary" data-tstatus="approved" data-user="' + PB.escape(t.username) + '">অনুমোদন দিন</button>' : "")
+      + (t.status === "approved" ? '<button type="button" class="text-button admin-delete" data-tstatus="suspended" data-user="' + PB.escape(t.username) + '">স্থগিত করুন</button>' : "")
+      + '</div></td></tr>').join("") || '<tr><td colspan="5" class="muted">এখনো কোনো শিক্ষক নিবন্ধন করেননি।</td></tr>';
+    const items = [...data.questions.map((q) => ({ ...q, kind: "question" })), ...data.resources.map((r) => ({ ...r, kind: "resource" }))];
+    get("adminReviewCount").textContent = PB.bn(items.length);
+    get("adminReviewList").innerHTML = items.map((item) => '<article class="teacher-item"><div class="teacher-item-head"><span>'
+      + (item.kind === "resource" ? "রিসোর্স" : item.type === "mcq" ? "MCQ" : "লিখিত · " + PB.bn(item.marks) + " নম্বর") + ' · ' + PB.escape(place(item))
+      + (item.chapter ? ' · ' + PB.escape(item.chapter) : "") + '</span><b>' + PB.escape(item.teacher.name) + (item.teacher.institution ? ", " + PB.escape(item.teacher.institution) : "") + '</b></div>'
+      + (item.kind === "resource"
+        ? '<p><strong>' + PB.escape(item.title) + '</strong></p><p><a href="' + PB.escape(item.url) + '" target="_blank" rel="noopener noreferrer nofollow">' + PB.escape(item.url) + '</a></p><p>' + PB.escape(item.description) + '</p>'
+        : '<p><strong>' + PB.escape(item.q) + '</strong></p>' + (item.options
+          ? '<ol class="teacher-opts">' + item.options.map((o, i) => '<li' + (i === item.answer ? ' class="is-answer"' : "") + '>' + letters[i] + '. ' + PB.escape(o) + '</li>').join("") + '</ol><p class="muted">ব্যাখ্যা: ' + PB.escape(item.explain) + '</p>'
+          : '<p class="muted">নমুনা উত্তর: ' + PB.escape(item.modelAnswer) + '</p>'))
+      + '<div class="actions"><button type="button" class="btn btn-primary" data-review="approve" data-kind="' + item.kind + '" data-id="' + PB.escape(item.id) + '">অনুমোদন দিন</button>'
+      + '<button type="button" class="btn btn-secondary" data-review="reject" data-kind="' + item.kind + '" data-id="' + PB.escape(item.id) + '">ফেরত দিন</button></div></article>').join("")
+      || '<p class="muted">যাচাইয়ের অপেক্ষায় কিছু নেই।</p>';
+  }
+  get("adminTeacherRows").addEventListener("click", async (event) => {
+    const button = event.target.closest("button[data-tstatus]");
+    if (!button) return;
+    const status = button.dataset.tstatus;
+    if (status === "suspended" && !confirm(button.dataset.user + " শিক্ষককে স্থগিত করবেন? তাঁর প্রকাশিত প্রশ্নও সাইট থেকে সরে যাবে।")) return;
+    try { await PB.studentRequest("/admin/teacher-status", { username: button.dataset.user, status }); await loadTeachers(); } catch (error) { say(error.message); }
+  });
+  get("adminReviewList").addEventListener("click", async (event) => {
+    const button = event.target.closest("button[data-review]");
+    if (!button) return;
+    let note = "";
+    if (button.dataset.review === "reject") {
+      note = prompt("ফেরত দেওয়ার কারণ লিখুন (শিক্ষক দেখতে পাবেন):");
+      if (note === null) return;
+    }
+    try {
+      await PB.studentRequest("/admin/review", { kind: button.dataset.kind, id: button.dataset.id, action: button.dataset.review, note });
+      await loadTeachers();
+    } catch (error) { say(error.message); }
+  });
+
   async function loadPanel() {
     const data = await PB.studentRequest("/admin/overview");
     students = data.students;
@@ -34,6 +83,7 @@
     get("adminLogin").hidden = true;
     get("adminPanel").hidden = false;
     say(data.inviteRequired ? "" : "সতর্কতা: আমন্ত্রণ কোড ছাড়াই যে কেউ আইডি খুলতে পারছে।");
+    await loadTeachers();
   }
 
   async function init() {

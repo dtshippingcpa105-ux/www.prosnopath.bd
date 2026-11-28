@@ -577,3 +577,14 @@ progress::-webkit-progress-value { background: var(--blue); }
 .parent-online-card > div { flex: 1 1 420px; }
 .parent-online-card h2 { margin-top: 0; }
 .parent-online-card ul { padding-inline-start: 1.2rem; }
+
+/* শিক্ষকদের প্রকাশিত কনটেন্ট */
+.community-meta { margin: 0 0 .3rem; color: var(--muted); font-size: .88rem; }
+.community-by { margin: .7rem 0 0; color: #5b3496; font-weight: 600; font-size: .92rem; }
+.community-q .option { font: inherit; cursor: pointer; width: 100%; }
+.community-explain { margin-top: .6rem; padding: .5rem .7rem; border-radius: 8px; background: #f3f6fd; }
+.community-answer summary { cursor: pointer; font-weight: 600; color: var(--blue); }
+.community-teacher { padding: 1rem 1.1rem; }
+.community-teacher h3 { margin: 0 0 .2rem; }
+.community-count { margin: .5rem 0 0; font-weight: 700; color: var(--navy); }
+.community-resource .community-by { margin-top: .4rem; }

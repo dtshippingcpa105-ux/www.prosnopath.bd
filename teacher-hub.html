@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>শিক্ষক হাব | প্রশ্নপাঠ</title>
+  <meta name="description" content="শিক্ষকরা প্রশ্ন ও ক্লাস রিসোর্স জমা দেন; যাচাইয়ের পর শিক্ষকের নামসহ প্রশ্নপাঠে প্রকাশ হয়।">
+  <link rel="icon" href="assets/favicon.png" type="image/png" sizes="64x64">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&amp;family=Noto+Serif+Bengali:wght@700;800&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/premium.css">
+  <link rel="stylesheet" href="assets/student.css">
+  <meta name="referrer" content="no-referrer">
+  <script defer src="data.js"></script>
+  <script defer src="assets/app.js"></script>
+    <script defer src="assets/teacher-hub.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">মূল কনটেন্টে যান</a>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand brand-depth" href="index.html" aria-label="প্রশ্নপাঠ হোম"><img src="assets/logo-horizontal.png" alt="" width="613" height="160"></a>
+      <button class="nav-toggle" id="navToggle" type="button" aria-expanded="false" aria-controls="mainNav" hidden>মেনু</button>
+      <nav class="main-nav" id="mainNav" aria-label="প্রধান মেনু">
+        <a href="index.html">হোম</a>
+        <a href="question-bank.html">প্রশ্নব্যাংক</a>
+        <a href="notes.html">অধ্যায়ের নোট</a>
+        <a href="planner.html">পড়ার পরিকল্পনা</a>
+            <a href="vocabulary.html">শব্দভান্ডার</a>
+      </nav>
+    </div>
+  </header>
+  <main id="main" tabindex="-1" class="student-main teacher-main">
+    <div class="wrap student-wrap">
+      <header class="student-heading">
+        <p class="student-class">শিক্ষকদের জন্য</p>
+        <h1>শিক্ষক হাব</h1>
+        <p>নিজের প্রশ্ন আর ক্লাস রিসোর্স জমা দিন। প্রশ্নপাঠ টিম যাচাই করে আপনার নামসহ প্রকাশ করবে, হাজারো শিক্ষার্থী উপকৃত হবে।</p>
+      </header>
+      <p class="status-box" id="teacherStatus" role="status">লোড হচ্ছে…</p>
+      <noscript><p class="status-box">এই পাতা ব্যবহার করতে জাভাস্ক্রিপ্ট চালু করুন।</p></noscript>
+
+      <section class="teacher-auth" id="teacherAuth" hidden>
+        <form class="panel student-card feedback-form" id="teacherLogin">
+          <h2>শিক্ষক লগইন</h2>
+          <label for="tLoginUser">আইডি</label>
+          <input id="tLoginUser" required minlength="4" maxlength="24" autocomplete="username" autocapitalize="none" spellcheck="false" dir="ltr">
+          <label for="tLoginPass">পাসওয়ার্ড</label>
+          <input id="tLoginPass" type="password" required minlength="10" maxlength="128" autocomplete="current-password">
+          <div class="actions"><button class="btn btn-primary" type="submit">লগইন করুন</button></div>
+        </form>
+        <form class="panel student-card feedback-form" id="teacherRegister">
+          <h2>নতুন শিক্ষক নিবন্ধন</h2>
+          <p class="muted">নিবন্ধনের পর প্রশ্নপাঠ টিম আপনার তথ্য যাচাই করে অনুমোদন দেবে। অনুমোদনের পর প্রশ্ন ও রিসোর্স জমা দিতে পারবেন।</p>
+          <label for="tRegName">আপনার নাম</label>
+          <input id="tRegName" required maxlength="60" autocomplete="name" placeholder="যেমন: মো. রহিম উদ্দিন">
+          <label for="tRegInst">প্রতিষ্ঠান</label>
+          <input id="tRegInst" maxlength="100" placeholder="বিদ্যালয়/মাদ্রাসা/কলেজের নাম">
+          <label for="tRegSubjects">যে বিষয় পড়ান</label>
+          <input id="tRegSubjects" maxlength="120" placeholder="যেমন: গণিত, বিজ্ঞান">
+          <label for="tRegUser">আইডি</label>
+          <input id="tRegUser" required minlength="4" maxlength="24" pattern="[A-Za-z][A-Za-z0-9\-]{3,23}" autocomplete="username" autocapitalize="none" spellcheck="false" dir="ltr" placeholder="teacher-rahim">
+          <p class="muted">৪–২৪টি ইংরেজি অক্ষর, সংখ্যা বা হাইফেন। শুরুতে একটি অক্ষর।</p>
+          <label for="tRegPass">পাসওয়ার্ড</label>
+          <input id="tRegPass" type="password" required minlength="10" maxlength="128" autocomplete="new-password">
+          <p class="muted">অন্তত ১০ অক্ষর। পাসওয়ার্ড ভুলে গেলে প্রশ্নপাঠের WhatsApp-এ যোগাযোগ করুন।</p>
+          <div class="actions"><button class="btn btn-secondary" type="submit">নিবন্ধন করুন</button></div>
+        </form>
+      </section>
+
+      <section id="teacherPanel" hidden>
+        <div class="teacher-top panel">
+          <div><p class="muted">শিক্ষক</p><strong id="tName"></strong><p class="muted" id="tInst"></p></div>
+          <span class="teacher-badge" id="tStatusBadge"></span>
+          <button class="text-button" id="teacherLogout" type="button">লগআউট</button>
+        </div>
+        <p class="status-box teacher-pending" id="tPendingNote" hidden>আপনার শিক্ষক আইডি এখন যাচাইয়ের অপেক্ষায়। অনুমোদন পেলে প্রশ্ন ও রিসোর্স জমা দিতে পারবেন। দ্রুত করতে প্রশ্নপাঠের WhatsApp-এ আইডি জানান।</p>
+        <div class="teacher-tabs" role="tablist" aria-label="শিক্ষক হাব">
+          <button type="button" role="tab" aria-selected="true" data-tab="question">প্রশ্ন যোগ</button>
+          <button type="button" role="tab" aria-selected="false" data-tab="resource">রিসোর্স শেয়ার</button>
+          <button type="button" role="tab" aria-selected="false" data-tab="mine">আমার জমা <span id="tMineCount"></span></button>
+          <button type="button" role="tab" aria-selected="false" data-tab="profile">প্রোফাইল</button>
+        </div>
+
+        <form class="panel teacher-pane feedback-form" data-pane="question" id="tQuestionForm">
+          <h2>নতুন প্রশ্ন</h2>
+          <div class="filter-grid">
+            <label>শ্রেণি<select id="tqClass" required></select></label>
+            <label>বিষয়<select id="tqSubject" required></select></label>
+            <label>অধ্যায়<input id="tqChapter" list="tqChapters" required maxlength="100" placeholder="অধ্যায়ের নাম"></label>
+            <label>প্রশ্নের ধরন<select id="tqType"><option value="mcq">বহুনির্বাচনি (MCQ)</option><option value="short">লিখিত</option></select></label>
+          </div>
+          <datalist id="tqChapters"></datalist>
+          <label for="tqQ">প্রশ্ন</label>
+          <textarea id="tqQ" rows="3" required maxlength="600"></textarea>
+          <fieldset class="teacher-options" id="tqMcq">
+            <legend>অপশন (সঠিকটিতে চিহ্ন দিন)</legend>
+            <label><input type="radio" name="tqAnswer" value="0" checked> ক. <input class="tq-opt" maxlength="200" aria-label="অপশন ক"></label>
+            <label><input type="radio" name="tqAnswer" value="1"> খ. <input class="tq-opt" maxlength="200" aria-label="অপশন খ"></label>
+            <label><input type="radio" name="tqAnswer" value="2"> গ. <input class="tq-opt" maxlength="200" aria-label="অপশন গ"></label>
+            <label><input type="radio" name="tqAnswer" value="3"> ঘ. <input class="tq-opt" maxlength="200" aria-label="অপশন ঘ"></label>
+            <label for="tqExplain">সঠিক উত্তরের ব্যাখ্যা</label>
+            <textarea id="tqExplain" rows="2" maxlength="600"></textarea>
+          </fieldset>
+          <fieldset class="teacher-options" id="tqShort" hidden>
+            <legend>লিখিত প্রশ্নের তথ্য</legend>
+            <label for="tqModel">নমুনা উত্তর</label>
+            <textarea id="tqModel" rows="4" maxlength="1500"></textarea>
+            <label for="tqMarks">নম্বর</label>
+            <input id="tqMarks" type="number" min="1" max="20" value="2">
+          </fieldset>
+          <p class="muted">নিজের লেখা প্রশ্ন দিন। অন্য বই বা গাইড থেকে হুবহু কপি করবেন না।</p>
+          <div class="actions"><button class="btn btn-primary" type="submit">যাচাইয়ের জন্য জমা দিন</button></div>
+        </form>
+
+        <form class="panel teacher-pane feedback-form" data-pane="resource" id="tResourceForm" hidden>
+          <h2>ক্লাস রিসোর্স শেয়ার</h2>
+          <p class="muted">শিক্ষার্থীদের কাজে লাগবে এমন লিংক দিন, যেমন নিজের ভিডিও ক্লাস, ওয়ার্কশিট বা সরকারি উপকরণ।</p>
+          <div class="filter-grid">
+            <label>শ্রেণি<select id="trClass" required></select></label>
+            <label>বিষয়<select id="trSubject" required></select></label>
+          </div>
+          <label for="trTitle">শিরোনাম</label>
+          <input id="trTitle" required maxlength="120">
+          <label for="trUrl">লিংক</label>
+          <input id="trUrl" type="url" required maxlength="500" placeholder="https://" dir="ltr">
+          <label for="trDesc">ছোট বিবরণ</label>
+          <textarea id="trDesc" rows="2" maxlength="400"></textarea>
+          <div class="actions"><button class="btn btn-primary" type="submit">যাচাইয়ের জন্য জমা দিন</button></div>
+        </form>
+
+        <section class="panel teacher-pane" data-pane="mine" hidden>
+          <h2>আমার জমা</h2>
+          <div id="tMine" class="teacher-mine"></div>
+        </section>
+
+        <form class="panel teacher-pane feedback-form" data-pane="profile" id="tProfileForm" hidden>
+          <h2>প্রোফাইল</h2>
+          <p class="muted">অনুমোদিত প্রশ্নের পাশে আপনার নাম ও প্রতিষ্ঠান দেখানো হবে।</p>
+          <label for="tpName">নাম</label><input id="tpName" required maxlength="60">
+          <label for="tpInst">প্রতিষ্ঠান</label><input id="tpInst" maxlength="100">
+          <label for="tpSubjects">যে বিষয় পড়ান</label><input id="tpSubjects" maxlength="120">
+          <label for="tpBio">ছোট পরিচিতি</label><textarea id="tpBio" rows="3" maxlength="400"></textarea>
+          <div class="actions"><button class="btn btn-primary" type="submit">সংরক্ষণ করুন</button></div>
+        </form>
+      </section>
+    </div>
+  </main>
+  
+</body>
+</html>

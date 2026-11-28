@@ -9,3 +9,4 @@
 !student-pilot/backup.mjs
 !student-pilot/container-start.mjs
 !*.txt
+!student-pilot/teacher.mjs

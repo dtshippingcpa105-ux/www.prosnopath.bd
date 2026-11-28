@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="assets/premium.css">
   <link rel="stylesheet" href="assets/student.css">
   <meta name="referrer" content="no-referrer">
+  <script defer src="data.js"></script>
   <script defer src="assets/app.js"></script>
     <script defer src="assets/admin.js"></script>
 </head>
@@ -69,6 +70,20 @@
             <table>
               <thead><tr><th scope="col">আইডি</th><th scope="col">কুইজ</th><th scope="col">শেষ সক্রিয়</th><th scope="col">তথ্য</th><th scope="col">কাজ</th></tr></thead>
               <tbody id="adminRows"></tbody>
+            </table>
+          </div>
+        </section>
+        <section class="panel admin-list admin-review" aria-labelledby="adminReviewTitle">
+          <h2 id="adminReviewTitle">যাচাইয়ের অপেক্ষায় <span class="dash-badge" id="adminReviewCount">০</span></h2>
+          <p class="muted">শিক্ষকদের জমা দেওয়া প্রশ্ন ও রিসোর্স। অনুমোদন দিলে শিক্ষকের নামসহ সাইটে প্রকাশ হবে; ফেরত দিলে কারণ লিখুন।</p>
+          <div id="adminReviewList" class="teacher-mine"></div>
+        </section>
+        <section class="panel admin-list" aria-labelledby="adminTeachersTitle">
+          <h2 id="adminTeachersTitle">শিক্ষক আইডি</h2>
+          <div class="admin-table" role="region" tabindex="0" aria-label="শিক্ষকের তালিকা">
+            <table>
+              <thead><tr><th scope="col">শিক্ষক</th><th scope="col">প্রতিষ্ঠান ও বিষয়</th><th scope="col">প্রশ্ন</th><th scope="col">অবস্থা</th><th scope="col">কাজ</th></tr></thead>
+              <tbody id="adminTeacherRows"></tbody>
             </table>
           </div>
         </section>

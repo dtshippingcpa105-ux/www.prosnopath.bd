@@ -4,6 +4,7 @@ import { dirname } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { promisify } from "node:util";
 import { runInNewContext } from "node:vm";
+import { setupTeacherHub } from "./teacher.mjs";
 
 const deriveKey = promisify(scrypt);
 const firstQuizId = "plant-reproduction";
@@ -17,7 +18,7 @@ const modelChapters = [
 ];
 const localCookie = "prosnopath_student";
 const sessionSeconds = 7 * 24 * 60 * 60;
-const maxBodyBytes = 4096;
+const maxBodyBytes = 16384;
 const uuid = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/;
 
 class RequestError extends Error {
@@ -131,8 +132,8 @@ export async function openStudentPilot({ contentRoot, dbPath, publicOrigin, invi
 
   const sources = await Promise.all(["data.js", "science-eight-data.js", "math-eight-data.js"]
     .map((file) => readFile(new URL(file, contentRoot), "utf8")));
-  const { chapters, subjects } = runInNewContext(sources.join("\n") + `
-    ({ chapters: [...CLASS_EIGHT_SCIENCE, ...CLASS_EIGHT_MATH], subjects: SUBJECTS });
+  const { chapters, subjects, subjectsByClass } = runInNewContext(sources.join("\n") + `
+    ({ chapters: [...CLASS_EIGHT_SCIENCE, ...CLASS_EIGHT_MATH], subjects: SUBJECTS, subjectsByClass: SUBJECTS_BY_CLASS });
   `, {}, { filename: "student-pilot-content.js" });
   const findChapter = (id) => chapters.find((item) => item.id === id && item.classId === "c8");
   const chapterQuestions = (chapter) => chapter.mcq.map((item) =>
@@ -225,6 +226,12 @@ export async function openStudentPilot({ contentRoot, dbPath, publicOrigin, invi
       PRIMARY KEY (student_id, source, q)
     ) STRICT;
   `);
+  const teacherHub = setupTeacherHub({
+    db, json, readBody, RequestError, sha256, deriveKey, randomBytes, randomUUID, timingSafeEqual, hosted,
+    checkAuthRate: () => checkAuthRate(),
+    subjectsByClass: JSON.parse(JSON.stringify(subjectsByClass)),
+    siteOrigins: ["https://dtshippingcpa105-ux.github.io", ...(process.env.PROSNOPATH_SITE_ORIGIN ? [process.env.PROSNOPATH_SITE_ORIGIN] : [])]
+  });
   const studentColumns = new Set(db.prepare("PRAGMA table_info(students)").all().map((c) => c.name));
   if (!studentColumns.has("recovery_hash")) db.exec("ALTER TABLE students ADD COLUMN recovery_hash TEXT");
   if (!studentColumns.has("created_at")) db.exec("ALTER TABLE students ADD COLUMN created_at INTEGER");
@@ -591,6 +598,7 @@ export async function openStudentPilot({ contentRoot, dbPath, publicOrigin, invi
       sql.deleteStudent.run(target.id);
       return json(response, 200, { deleted: username });
     }
+    if (await teacherHub.handleAdmin(request, response, path, method)) return;
     throw new RequestError(404, "পাতাটি পাওয়া যায়নি।");
   }
 
@@ -629,6 +637,8 @@ export async function openStudentPilot({ contentRoot, dbPath, publicOrigin, invi
       return signIn(request, response, target, 200, { recoveryCode: newRecoveryCode(target.id) });
     }
     if (path.startsWith("/admin/")) return handleAdmin(request, response, path, method);
+    if (method === "GET" && path === "/community") return teacherHub.handlePublic(request, response);
+    if (path.startsWith("/teacher/")) return teacherHub.handleTeacher(request, response, path, method);
     const tokenHash = sessionHash(request);
     const student = tokenHash && sql.findSession.get(tokenHash, Date.now());
     if (method === "GET" && path === "/session") {

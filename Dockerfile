@@ -4,7 +4,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 COPY *.html *.js *.txt preview.mjs ./
 COPY assets/ ./assets/
-COPY student-pilot/server.mjs student-pilot/backup.mjs student-pilot/container-start.mjs ./student-pilot/
+COPY student-pilot/server.mjs student-pilot/teacher.mjs student-pilot/backup.mjs student-pilot/container-start.mjs ./student-pilot/
 
 USER node
 EXPOSE 8080
