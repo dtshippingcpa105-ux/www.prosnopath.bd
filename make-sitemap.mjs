@@ -7,7 +7,7 @@ if (!/^https:\/\/[^/]+(\/.*)?$/.test(origin)) {
   console.error("HTTPS ঠিকানা দিন, যেমন: node make-sitemap.mjs https://www.example.com");
   process.exit(1);
 }
-const skip = new Set(["404.html", "student.html", "student-model.html", "search.html"]);
+const skip = new Set(["404.html", "student.html", "student-model.html", "parent-view.html", "search.html"]);
 const pages = (await readdir(".")).filter((f) => f.endsWith(".html") && !skip.has(f)).sort();
 const rows = [];
 for (const page of pages) {

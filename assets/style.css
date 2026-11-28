@@ -571,3 +571,9 @@ progress::-webkit-progress-value { background: var(--blue); }
 @media print {
   body:has(.theme-notes) .site-header, body:has(.theme-notes) .site-footer, .note-tools, .note-check, .study-note .actions, .study-note nav { display: none !important; }
 }
+
+/* অভিভাবক কর্নার: অনলাইন অগ্রগতি */
+.parent-online-card { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem 2rem; padding: clamp(1.1rem, 3vw, 1.8rem); border-left: 6px solid #f59e0b; }
+.parent-online-card > div { flex: 1 1 420px; }
+.parent-online-card h2 { margin-top: 0; }
+.parent-online-card ul { padding-inline-start: 1.2rem; }

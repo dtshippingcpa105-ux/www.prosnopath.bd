@@ -133,6 +133,28 @@ test("subject results stay separate, private, and available across logins and re
   assert.ok(!afterResolve.mistakes.some((item) => item.q === firstMistake.q));
   assert.equal((await client("/dashboard", { cookie: cookieB })).data.overview.mistakeCount, 0);
 
+  // অভিভাবক লিংক
+  await client("/parent-link", { status: 401 });
+  assert.equal((await client("/parent-link", { cookie: cookieA })).data.active, false);
+  const link = (await client("/parent-link", { cookie: cookieA, body: { action: "create" } })).data;
+  assert.match(link.token, /^[A-Za-z0-9_-]{32}$/);
+  assert.equal((await client("/parent-link", { cookie: cookieA })).data.active, true);
+  const parent = (await client("/parent-view", { body: { token: link.token } })).data;
+  assert.equal(parent.student.username, "learner-one");
+  assert.equal(parent.overview.totalQuizzes, 1);
+  assert.equal(parent.chapters.length, 5);
+  assert.equal(parent.recent.length, 1);
+  assert.ok(!JSON.stringify(parent).includes('"options"'));
+  assert.ok(!("mistakes" in parent.overview));
+  assert.equal((await client("/parent-link", { cookie: cookieA })).data.lastViewed > 0, true);
+  await client("/parent-view", { body: { token: "short" }, status: 400 });
+  await client("/parent-view", { body: { token: "x".repeat(32) }, status: 404 });
+  const renewed = (await client("/parent-link", { cookie: cookieA, body: { action: "create" } })).data;
+  await client("/parent-view", { body: { token: link.token }, status: 404 });
+  await client("/parent-view", { body: { token: renewed.token } });
+  await client("/parent-link", { cookie: cookieA, body: { action: "revoke" } });
+  await client("/parent-view", { body: { token: renewed.token }, status: 404 });
+
   await close();
   await open();
   const persisted = await client(resultPath, { cookie: separateCookie });

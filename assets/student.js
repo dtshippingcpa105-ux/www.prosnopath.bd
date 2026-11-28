@@ -286,6 +286,58 @@
   });
   get("dashPracticeClose").addEventListener("click", endPractice);
 
+
+  // ---- অভিভাবকের সঙ্গে শেয়ার ----
+  const shareDate = new Intl.DateTimeFormat("bn-BD", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Dhaka" });
+  function showParentLink(info, token) {
+    const state = get("parentShareState");
+    get("parentShareRevoke").hidden = !info.active;
+    get("parentShareCreate").textContent = info.active ? "নতুন লিংক তৈরি করো" : "অভিভাবক লিংক তৈরি করো";
+    state.textContent = info.active
+      ? "লিংক চালু আছে (তৈরি: " + shareDate.format(new Date(info.createdAt)) + ")"
+        + (info.lastViewed ? " · অভিভাবক শেষ দেখেছেন " + shareDate.format(new Date(info.lastViewed)) : " · এখনো খোলা হয়নি")
+      : "এখন কোনো অভিভাবক লিংক চালু নেই।";
+    state.dataset.active = String(!!info.active);
+    const box = get("parentShareBox");
+    if (!token) {
+      box.hidden = true;
+      if (info.active) state.textContent += "। নিরাপত্তার জন্য লিংক একবারই দেখানো হয়; আবার পাঠাতে চাইলে নতুন লিংক তৈরি করো।";
+      return;
+    }
+    const url = new URL("parent-view.html", location.href);
+    url.hash = "t=" + token;
+    get("parentShareUrl").value = url.href;
+    get("parentShareWhatsapp").href = "https://wa.me/?text=" + encodeURIComponent("প্রশ্নপাঠে আমার পড়াশোনার অগ্রগতি দেখুন: " + url.href);
+    box.hidden = false;
+  }
+  async function loadParentLink() {
+    try { showParentLink(await PB.studentRequest("/parent-link")); } catch { get("parentShare").hidden = true; }
+  }
+  get("parentShareCreate").addEventListener("click", async (event) => {
+    const button = event.currentTarget;
+    if (get("parentShareRevoke").hidden === false && !confirm("নতুন লিংক তৈরি করলে আগের লিংকটা আর কাজ করবে না। এগিয়ে যাবে?")) return;
+    button.disabled = true;
+    try {
+      const info = await PB.studentRequest("/parent-link", { action: "create" });
+      showParentLink(info, info.token);
+      get("parentShareUrl").select();
+    } catch (error) {
+      announce(error.message);
+    } finally {
+      button.disabled = false;
+    }
+  });
+  get("parentShareRevoke").addEventListener("click", async () => {
+    if (!confirm("লিংকটা বন্ধ করলে অভিভাবক আর অগ্রগতি দেখতে পারবেন না। বন্ধ করবে?")) return;
+    try { showParentLink(await PB.studentRequest("/parent-link", { action: "revoke" })); } catch (error) { announce(error.message); }
+  });
+  get("parentShareCopy").addEventListener("click", async () => {
+    const input = get("parentShareUrl");
+    try { await navigator.clipboard.writeText(input.value); get("parentShareCopy").textContent = "কপি হয়েছে ✓"; }
+    catch { input.select(); get("parentShareCopy").textContent = "লিংকটা নির্বাচন করা আছে, কপি করো"; }
+    setTimeout(() => { get("parentShareCopy").textContent = "লিংক কপি করো"; }, 2500);
+  });
+
   async function loadDashboard() {
     const { student, subjects, chapterQuizzes, attempts, attemptCount, best, modelTest, overview } = await PB.studentRequest("/dashboard");
     const reports = chapterQuizzes ?? subjects ?? [{
@@ -302,6 +354,7 @@
     overviewQuizIds = new Set(reports.map((item) => item.quizId));
     renderOverview(overview);
     renderWeak(reports);
+    loadParentLink();
     get("studentModel").hidden = !modelTest;
     if (modelTest) {
       get("studentModelInfo").textContent = modelTest.title + " · " + PB.bn(modelTest.total) + "টি প্রশ্ন · " + PB.bn(modelTest.minutes) + " মিনিট";

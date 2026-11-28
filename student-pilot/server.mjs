@@ -191,6 +191,12 @@ export async function openStudentPilot({ contentRoot, dbPath, publicOrigin, invi
       deadline INTEGER NOT NULL,
       choices_json TEXT NOT NULL
     ) STRICT;
+    CREATE TABLE IF NOT EXISTS parent_links (
+      student_id TEXT PRIMARY KEY REFERENCES students(id) ON DELETE CASCADE,
+      token_hash TEXT NOT NULL UNIQUE,
+      created_at INTEGER NOT NULL,
+      last_viewed INTEGER
+    ) STRICT;
     CREATE TABLE IF NOT EXISTS mistake_resolutions (
       student_id TEXT NOT NULL REFERENCES students(id) ON DELETE CASCADE,
       source TEXT NOT NULL,
@@ -215,6 +221,12 @@ export async function openStudentPilot({ contentRoot, dbPath, publicOrigin, invi
     addModel: db.prepare("INSERT INTO active_model_tests VALUES (?, ?, ?, ?)"),
     saveChoice: db.prepare("UPDATE active_model_tests SET choices_json = ? WHERE student_id = ?"),
     endModel: db.prepare("DELETE FROM active_model_tests WHERE student_id = ?"),
+    parentLink: db.prepare("SELECT created_at, last_viewed FROM parent_links WHERE student_id = ?"),
+    setParentLink: db.prepare("INSERT INTO parent_links(student_id, token_hash, created_at) VALUES (?, ?, ?) ON CONFLICT(student_id) DO UPDATE SET token_hash = excluded.token_hash, created_at = excluded.created_at, last_viewed = NULL"),
+    revokeParentLink: db.prepare("DELETE FROM parent_links WHERE student_id = ?"),
+    parentStudent: db.prepare("SELECT students.id, students.username FROM parent_links JOIN students ON students.id = parent_links.student_id WHERE token_hash = ?"),
+    parentViewed: db.prepare("UPDATE parent_links SET last_viewed = ? WHERE student_id = ?"),
+    recentAttempts: db.prepare("SELECT quiz_id, chapter, completed_at, total, correct, skipped FROM quiz_attempts WHERE student_id = ? AND completed_at IS NOT NULL ORDER BY completed_at DESC, rowid DESC LIMIT 8"),
     resolutions: db.prepare("SELECT source, q, resolved_at FROM mistake_resolutions WHERE student_id = ?"),
     resolve: db.prepare("INSERT INTO mistake_resolutions VALUES (?, ?, ?, ?) ON CONFLICT(student_id, source, q) DO UPDATE SET resolved_at = excluded.resolved_at"),
     completedAll: db.prepare("SELECT quiz_id, chapter, started_at, completed_at, total, correct, skipped, questions_json, answers_json FROM quiz_attempts WHERE student_id = ? AND completed_at IS NOT NULL ORDER BY completed_at ASC, rowid ASC LIMIT 1000")
@@ -332,6 +344,42 @@ export async function openStudentPilot({ contentRoot, dbPath, publicOrigin, invi
     };
   }
 
+  // অভিভাবকের জন্য শুধু-দেখার সারাংশ: কোনো উত্তর বা প্রশ্নের তালিকা নয়, শুধু অগ্রগতি
+  function parentSummary(student, now) {
+    const data = overview(student.id, now);
+    const mistakesByChapter = new Map();
+    for (const item of data.mistakes) {
+      const key = item.chapter || "অন্যান্য";
+      mistakesByChapter.set(key, { chapter: key, subjectName: item.subjectName, count: (mistakesByChapter.get(key)?.count ?? 0) + 1 });
+    }
+    const chapters = [...quizzes.values()].map(({ id, subjectName, chapter }) => {
+      const attempts = sql.history.all(student.id, id);
+      const recent = attempts.slice(0, 5);
+      const total = recent.reduce((sum, a) => sum + a.total, 0);
+      const correct = recent.reduce((sum, a) => sum + a.correct, 0);
+      return {
+        chapter, subjectName, attemptCount: sql.stats.get(student.id, id).attempts,
+        accuracy: total ? Math.round(correct / total * 100) : null, lastAt: attempts[0]?.completed_at ?? null
+      };
+    });
+    const modelStats = sql.stats.get(student.id, modelId);
+    return {
+      student: { username: student.username, classId: "c8" },
+      generatedAt: now,
+      overview: {
+        today: data.today, days: data.days, streak: data.streak, bestStreak: data.bestStreak,
+        practicedToday: data.practicedToday, xp: data.xp, totalQuizzes: data.totalQuizzes, mistakeCount: data.mistakeCount
+      },
+      chapters,
+      weakChapters: [...mistakesByChapter.values()].sort((a, b) => b.count - a.count).slice(0, 5),
+      recent: sql.recentAttempts.all(student.id).map((row) => ({
+        chapter: row.quiz_id === modelId ? modelTitle : row.chapter, completedAt: row.completed_at,
+        total: row.total, correct: row.correct, skipped: row.skipped, model: row.quiz_id === modelId
+      })),
+      modelTest: { attemptCount: modelStats.attempts, best: modelStats.best === null ? null : Math.round(modelStats.best * 100) }
+    };
+  }
+
   async function handleModel(request, response, path, studentId) {
     const method = request.method;
     const body = method === "POST" ? await readBody(request) : {};
@@ -373,6 +421,8 @@ export async function openStudentPilot({ contentRoot, dbPath, publicOrigin, invi
     });
     return json(response, status, data);
   }
+  let parentViews = 0;
+  let parentWindow = 0;
   let authAttempts = 0;
   let rateWindow = 0;
   const dummySalt = randomBytes(16).toString("hex");
@@ -443,7 +493,36 @@ export async function openStudentPilot({ contentRoot, dbPath, publicOrigin, invi
       sql.endSession.run(tokenHash);
       return json(response, 200, {}, { "Set-Cookie": sessionCookie("", 0) });
     }
+    if (method === "POST" && path === "/parent-view") {
+      const now = Date.now();
+      if (now >= parentWindow) { parentWindow = now + 60_000; parentViews = 0; }
+      if (++parentViews > 60) throw new RequestError(429, "অনেকবার চেষ্টা হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।");
+      const { token } = await readBody(request);
+      if (typeof token !== "string" || !/^[A-Za-z0-9_-]{32,64}$/.test(token)) {
+        throw new RequestError(400, "লিংকটি সঠিক নয়। শিক্ষার্থীর কাছ থেকে নতুন লিংক নিন।");
+      }
+      const owner = sql.parentStudent.get(sha256(token).toString("hex"));
+      if (!owner) throw new RequestError(404, "লিংকটি আর চালু নেই। শিক্ষার্থীর কাছ থেকে নতুন লিংক নিন।");
+      sql.parentViewed.run(now, owner.id);
+      return json(response, 200, parentSummary(owner, now));
+    }
     if (!student) throw new RequestError(401, "এই অংশটি দেখতে শিক্ষার্থী আইডিতে ঢুকুন।");
+    if (path === "/parent-link") {
+      if (method === "GET") {
+        const link = sql.parentLink.get(student.id);
+        return json(response, 200, { active: !!link, createdAt: link?.created_at ?? null, lastViewed: link?.last_viewed ?? null });
+      }
+      const { action } = await readBody(request);
+      if (action === "revoke") {
+        sql.revokeParentLink.run(student.id);
+        return json(response, 200, { active: false });
+      }
+      if (action !== "create") throw new RequestError(400, "অনুরোধটি বোঝা যায়নি।");
+      const token = randomBytes(24).toString("base64url");
+      const now = Date.now();
+      sql.setParentLink.run(student.id, sha256(token).toString("hex"), now);
+      return json(response, 200, { active: true, token, createdAt: now });
+    }
 
     if (path === "/model-test" || (method === "POST" && ["/model-test/answer", "/model-test/finish"].includes(path))) {
       return handleModel(request, response, path, student.id);

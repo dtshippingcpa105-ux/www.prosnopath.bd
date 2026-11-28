@@ -81,7 +81,7 @@ const server = createServer(hosted ? { headersTimeout: 10_000, requestTimeout: 2
 
   const file = path === "/" ? "index.html" : path.slice(1);
   const extension = file.split(".").at(-1);
-  const pilotPage = file === "student.html" || file === "student-model.html";
+  const pilotPage = file === "student.html" || file === "student-model.html" || file === "parent-view.html";
   if ((studentPilot || !pilotPage) && /^(?:assets\/)?[a-z\d-]+\.(?:html|js|css|png|jpg)$/.test(file) || file === "robots.txt" || file === "sitemap.xml") {
     try {
       let data = file === "404.html" ? missing : await readFile(fileURLToPath(new URL(file, root)));

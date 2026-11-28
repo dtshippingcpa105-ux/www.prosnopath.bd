@@ -125,6 +125,25 @@
               <p class="dash-chart-legend"><span class="dot dot-right"></span> সঠিক <span class="dot dot-wrong"></span> ভুল <span class="dot dot-skip"></span> বাদ</p>
             </div>
           </div>
+          <section class="parent-share panel" id="parentShare" aria-labelledby="parentShareTitle">
+            <div>
+              <h3 id="parentShareTitle">👪 অভিভাবকের সঙ্গে অগ্রগতি শেয়ার</h3>
+              <p class="muted">একটি গোপন লিংক তৈরি করে আব্বু-আম্মুকে পাঠাও। তাঁরা শুধু তোমার অগ্রগতি দেখতে পারবেন, কিছু বদলাতে পারবেন না। যেকোনো সময় লিংক বন্ধ করা যায়।</p>
+              <p id="parentShareState" class="parent-share-state"></p>
+            </div>
+            <div class="parent-share-box" id="parentShareBox" hidden>
+              <input id="parentShareUrl" type="text" readonly dir="ltr" aria-label="অভিভাবক লিংক">
+              <div class="actions">
+                <button type="button" class="btn btn-secondary" id="parentShareCopy">লিংক কপি করো</button>
+                <a class="btn btn-whatsapp" id="parentShareWhatsapp" target="_blank" rel="noopener noreferrer">WhatsApp-এ পাঠাও</a>
+              </div>
+              <p class="muted">লিংকটা শুধু অভিভাবককে দাও। অন্য কেউ পেলে “লিংক বন্ধ করো” চেপে নতুন লিংক তৈরি করো।</p>
+            </div>
+            <div class="actions">
+              <button type="button" class="btn btn-primary" id="parentShareCreate">অভিভাবক লিংক তৈরি করো</button>
+              <button type="button" class="text-button" id="parentShareRevoke" hidden>লিংক বন্ধ করো</button>
+            </div>
+          </section>
           <section class="dash-weak panel" id="dashWeak" aria-labelledby="dashWeakTitle">
             <h3 id="dashWeakTitle">অধ্যায়ভিত্তিক দক্ষতা</h3>
             <p class="muted">সাম্প্রতিক কুইজের ফল ধরে হিসাব। কম শতাংশের অধ্যায় আগে দেখানো হয়েছে।</p>
