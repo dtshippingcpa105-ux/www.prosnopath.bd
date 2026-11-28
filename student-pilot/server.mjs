@@ -191,6 +191,13 @@ export async function openStudentPilot({ contentRoot, dbPath, publicOrigin, invi
       deadline INTEGER NOT NULL,
       choices_json TEXT NOT NULL
     ) STRICT;
+    CREATE TABLE IF NOT EXISTS mistake_resolutions (
+      student_id TEXT NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+      source TEXT NOT NULL,
+      q TEXT NOT NULL,
+      resolved_at INTEGER NOT NULL,
+      PRIMARY KEY (student_id, source, q)
+    ) STRICT;
   `);
   const sql = {
     findStudent: db.prepare("SELECT * FROM students WHERE username = ?"),
@@ -208,6 +215,8 @@ export async function openStudentPilot({ contentRoot, dbPath, publicOrigin, invi
     addModel: db.prepare("INSERT INTO active_model_tests VALUES (?, ?, ?, ?)"),
     saveChoice: db.prepare("UPDATE active_model_tests SET choices_json = ? WHERE student_id = ?"),
     endModel: db.prepare("DELETE FROM active_model_tests WHERE student_id = ?"),
+    resolutions: db.prepare("SELECT source, q, resolved_at FROM mistake_resolutions WHERE student_id = ?"),
+    resolve: db.prepare("INSERT INTO mistake_resolutions VALUES (?, ?, ?, ?) ON CONFLICT(student_id, source, q) DO UPDATE SET resolved_at = excluded.resolved_at"),
     completedAll: db.prepare("SELECT quiz_id, chapter, started_at, completed_at, total, correct, skipped, questions_json, answers_json FROM quiz_attempts WHERE student_id = ? AND completed_at IS NOT NULL ORDER BY completed_at ASC, rowid ASC LIMIT 1000")
   };
 
@@ -255,6 +264,7 @@ export async function openStudentPilot({ contentRoot, dbPath, publicOrigin, invi
         mistakes.delete(key);
         mistakes.set(key, {
           q: item.q, options: item.options, answer: item.answer, explain: item.explain, figure: item.figure, choice,
+          source: row.quiz_id,
           quizId: row.quiz_id === modelId ? (item.chapterId ?? null) : row.quiz_id,
           chapter: item.chapterName ?? row.chapter,
           subjectName: item.subjectName ?? quizzes.get(row.quiz_id)?.subjectName ?? "",
@@ -262,6 +272,9 @@ export async function openStudentPilot({ contentRoot, dbPath, publicOrigin, invi
         });
       });
     }
+    // অনুশীলনে সঠিক করা প্রশ্ন খাতা থেকে বাদ, যদি তার পরে আবার ভুল না হয়ে থাকে
+    const resolved = new Map(sql.resolutions.all(studentId).map((r) => [r.source + "\0" + r.q, r.resolved_at]));
+    const open = [...mistakes.entries()].filter(([key, item]) => !(resolved.get(key) >= item.lastSeen)).map(([, item]) => item);
     const today = dhakaDay(now);
     let cursor = active.has(today) ? now : now - dayMs;
     let streak = 0;
@@ -280,7 +293,7 @@ export async function openStudentPilot({ contentRoot, dbPath, publicOrigin, invi
     return {
       today, days: [...days.values()], streak, bestStreak: best, practicedToday: active.has(today),
       xp: totalCorrect * 10 + rows.length * 5, totalQuizzes: rows.length,
-      mistakeCount: mistakes.size, mistakes: [...mistakes.values()].reverse().slice(0, 60)
+      mistakeCount: open.length, mistakes: open.reverse().slice(0, 60)
     };
   }
 
@@ -459,6 +472,15 @@ export async function openStudentPilot({ contentRoot, dbPath, publicOrigin, invi
       });
       const summaryData = overview(student.id, Date.now());
       return json(response, 200, { student: publicStudent(student), subjects, chapterQuizzes, attempts, attemptCount, best, modelTest, overview: summaryData });
+    }
+    if (method === "POST" && path === "/mistakes/resolve") {
+      const { source, q } = await readBody(request);
+      const known = typeof source === "string" && (source === modelId || quizzes.has(source));
+      if (!known || typeof q !== "string" || !q || q.length > 600) {
+        throw new RequestError(400, "প্রশ্নটি চেনা যায়নি।");
+      }
+      sql.resolve.run(student.id, source, q, Date.now());
+      return json(response, 200, { ok: true });
     }
     if (method === "POST" && path === "/attempts") {
       const { quiz } = await readBody(request);

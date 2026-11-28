@@ -155,6 +155,7 @@
     get("studentDashboard").querySelector(".dash-streak").dataset.active = String(data.practicedToday);
     renderRange();
     get("dashMistakeCount").textContent = PB.bn(data.mistakeCount);
+    get("dashPracticeStart").hidden = !data.mistakes.length || !!practice;
     const list = get("dashMistakeList");
     if (!data.mistakes.length) {
       list.innerHTML = '<p class="status-box">' + (data.totalQuizzes ? "খাতা খালি। সব ভুল ঠিক করে ফেলেছেন!" : "কুইজ দিলে ভুল ও বাদ পড়া প্রশ্ন এখানে জমা হবে।") + '</p>';
@@ -184,6 +185,107 @@
     });
   }
 
+
+  // ---- অধ্যায়ভিত্তিক দক্ষতা ----
+  function renderWeak(reports) {
+    const list = get("dashWeakList");
+    const tried = reports.filter((r) => r.attempts?.length).map((r) => {
+      const recent = r.attempts.slice(0, 5);
+      const total = recent.reduce((s, a) => s + a.total, 0);
+      const correct = recent.reduce((s, a) => s + a.correct, 0);
+      return { ...r, pct: total ? Math.round(correct / total * 100) : 0 };
+    }).sort((a, b) => a.pct - b.pct);
+    const untried = reports.filter((r) => !r.attempts?.length).length;
+    if (!tried.length) {
+      list.innerHTML = '<p class="status-box">যেকোনো অধ্যায়ের কুইজ দিলে এখানে আপনার দক্ষতার হিসাব দেখাবে।</p>';
+      return;
+    }
+    list.innerHTML = tried.map((r) => {
+      const level = r.pct < 50 ? "low" : r.pct < 80 ? "mid" : "high";
+      const tip = level === "low" ? "নোট আবার পড়ুন" : level === "mid" ? "আরেকটু অনুশীলন" : "চমৎকার";
+      return '<div class="dash-weak-row" data-level="' + level + '"><div class="dash-weak-name"><strong>' + PB.escape(r.chapter)
+        + '</strong><small>' + PB.escape(r.subjectName) + ' · ' + tip + '</small></div>'
+        + '<div class="dash-weak-bar" aria-hidden="true"><span style="width:' + Math.max(4, r.pct) + '%"></span></div>'
+        + '<b>' + PB.bn(r.pct) + '%</b><div class="dash-weak-links">'
+        + '<a href="' + PB.escape(PB.href("notes.html", { note: r.quizId })) + '">নোট</a>'
+        + '<a href="' + PB.escape(PB.href("quiz.html", { student: r.quizId }) + "#quizWorkspace") + '">কুইজ</a></div></div>';
+    }).join("") + (untried ? '<p class="muted">এখনো শুরু করেননি: ' + PB.bn(untried) + 'টি অধ্যায়।</p>' : "");
+  }
+
+  // ---- ভুলের খাতা থেকে অনুশীলন ----
+  let practice = null;
+  const letters = ["ক", "খ", "গ", "ঘ", "ঙ"];
+
+  function showPracticeQuestion() {
+    const { items, index } = practice;
+    const item = items[index];
+    get("dashPracticeProgress").textContent = "প্রশ্ন " + PB.bn(index + 1) + " / " + PB.bn(items.length)
+      + " · সঠিক " + PB.bn(practice.fixed);
+    get("dashPracticeMeta").textContent = [item.subjectName, item.chapter].filter(Boolean).join(" · ");
+    get("dashPracticeQuestion").textContent = item.q;
+    get("dashPracticeOptions").innerHTML = item.options.map((text, i) =>
+      '<button type="button" class="dash-practice-option" data-choice="' + i + '"><span>' + letters[i] + '</span>' + PB.escape(text) + '</button>').join("");
+    get("dashPracticeFeedback").innerHTML = "";
+    get("dashPracticeNext").hidden = true;
+    get("dashPracticeQuestion").focus();
+  }
+
+  async function answerPractice(choice) {
+    const item = practice.items[practice.index];
+    const buttons = [...get("dashPracticeOptions").querySelectorAll("button")];
+    for (const b of buttons) b.disabled = true;
+    buttons[item.answer].dataset.state = "right";
+    const right = choice === item.answer;
+    if (!right) buttons[choice].dataset.state = "wrong";
+    get("dashPracticeFeedback").innerHTML = '<p class="dash-practice-verdict" data-right="' + right + '">'
+      + (right ? "সঠিক! খাতা থেকে সরানো হচ্ছে।" : "হয়নি। সঠিক উত্তর: " + PB.escape(item.options[item.answer])) + '</p>'
+      + (item.explain ? '<p>' + PB.escape(item.explain) + '</p>' : "");
+    if (right) {
+      practice.fixed += 1;
+      try {
+        await PB.studentRequest("/mistakes/resolve", { source: item.source, q: item.q });
+      } catch (error) {
+        get("dashPracticeFeedback").insertAdjacentHTML("beforeend", '<p class="muted">' + PB.escape(error.message) + '</p>');
+      }
+    }
+    const last = practice.index === practice.items.length - 1;
+    const next = get("dashPracticeNext");
+    next.textContent = last ? "অনুশীলন শেষ করুন" : "পরের প্রশ্ন";
+    next.hidden = false;
+    next.focus();
+  }
+
+  async function endPractice() {
+    const fixed = practice?.fixed ?? 0;
+    const total = practice?.items.length ?? 0;
+    practice = null;
+    get("dashPractice").hidden = true;
+    get("dashPracticeStart").hidden = false;
+    if (fixed) await loadDashboard();
+    if (total) announce(PB.bn(total) + "টির মধ্যে " + PB.bn(fixed) + "টি সঠিক হয়েছে" + (fixed ? ", সেগুলো খাতা থেকে সরানো হয়েছে।" : "।"));
+    get("mistakeTitle").scrollIntoView({ block: "start" });
+  }
+
+  get("dashPracticeStart").addEventListener("click", () => {
+    const items = (overviewData?.mistakes ?? []).filter((m) => Array.isArray(m.options) && Number.isInteger(m.answer) && m.source);
+    if (!items.length) return;
+    for (let i = items.length - 1; i > 0; i -= 1) { const j = Math.floor(Math.random() * (i + 1)); [items[i], items[j]] = [items[j], items[i]]; }
+    practice = { items: items.slice(0, 10), index: 0, fixed: 0 };
+    get("dashPracticeStart").hidden = true;
+    get("dashPractice").hidden = false;
+    showPracticeQuestion();
+  });
+  get("dashPracticeOptions").addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-choice]");
+    if (button && !button.disabled) answerPractice(Number(button.dataset.choice));
+  });
+  get("dashPracticeNext").addEventListener("click", () => {
+    if (!practice) return;
+    if (practice.index === practice.items.length - 1) endPractice();
+    else { practice.index += 1; showPracticeQuestion(); }
+  });
+  get("dashPracticeClose").addEventListener("click", endPractice);
+
   async function loadDashboard() {
     const { student, subjects, chapterQuizzes, attempts, attemptCount, best, modelTest, overview } = await PB.studentRequest("/dashboard");
     const reports = chapterQuizzes ?? subjects ?? [{
@@ -199,6 +301,7 @@
     get("studentSubjects").replaceChildren(...[...bySubject].map(renderSubjectGroup));
     overviewQuizIds = new Set(reports.map((item) => item.quizId));
     renderOverview(overview);
+    renderWeak(reports);
     get("studentModel").hidden = !modelTest;
     if (modelTest) {
       get("studentModelInfo").textContent = modelTest.title + " · " + PB.bn(modelTest.total) + "টি প্রশ্ন · " + PB.bn(modelTest.minutes) + " মিনিট";

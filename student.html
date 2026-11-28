@@ -123,10 +123,29 @@
               <p class="dash-chart-legend"><span class="dot dot-right"></span> সঠিক <span class="dot dot-wrong"></span> ভুল <span class="dot dot-skip"></span> বাদ</p>
             </div>
           </div>
+          <section class="dash-weak panel" id="dashWeak" aria-labelledby="dashWeakTitle">
+            <h3 id="dashWeakTitle">অধ্যায়ভিত্তিক দক্ষতা</h3>
+            <p class="muted">সাম্প্রতিক কুইজের ফল ধরে হিসাব। কম শতাংশের অধ্যায় আগে দেখানো হয়েছে।</p>
+            <div id="dashWeakList" class="dash-weak-list"></div>
+          </section>
           <section class="dash-mistakes panel" id="studentMistakes" aria-labelledby="mistakeTitle">
             <div class="dash-mistakes-head">
-              <h3 id="mistakeTitle">ভুলের খাতা <span class="dash-badge" id="dashMistakeCount">০</span></h3>
-              <p class="muted">যে প্রশ্নে ভুল করেছেন বা বাদ দিয়েছেন, পরে সঠিক না হওয়া পর্যন্ত এখানে থাকবে।</p>
+              <div>
+                <h3 id="mistakeTitle">ভুলের খাতা <span class="dash-badge" id="dashMistakeCount">০</span></h3>
+                <p class="muted">যে প্রশ্নে ভুল করেছেন বা বাদ দিয়েছেন, পরে সঠিক না হওয়া পর্যন্ত এখানে থাকবে।</p>
+              </div>
+              <button type="button" class="btn btn-primary" id="dashPracticeStart" hidden>ভুলগুলো অনুশীলন করুন</button>
+            </div>
+            <div class="dash-practice" id="dashPractice" hidden>
+              <div class="dash-practice-top">
+                <p id="dashPracticeProgress" class="muted"></p>
+                <button type="button" class="text-button" id="dashPracticeClose">অনুশীলন বন্ধ করুন</button>
+              </div>
+              <p class="dash-practice-meta" id="dashPracticeMeta"></p>
+              <h4 id="dashPracticeQuestion" tabindex="-1"></h4>
+              <div id="dashPracticeOptions" class="dash-practice-options"></div>
+              <div id="dashPracticeFeedback" class="dash-practice-feedback" role="status"></div>
+              <div class="actions"><button type="button" class="btn btn-primary" id="dashPracticeNext" hidden>পরের প্রশ্ন</button></div>
             </div>
             <div id="dashMistakeList"></div>
           </section>

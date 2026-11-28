@@ -124,6 +124,14 @@ test("subject results stay separate, private, and available across logins and re
   assert.ok(overview.mistakes.every((item) => item.choice !== item.answer && item.chapter && item.explain));
   const emptyOverview = (await client("/dashboard", { cookie: cookieB })).data.overview;
   assert.deepEqual([emptyOverview.streak, emptyOverview.xp, emptyOverview.mistakeCount], [0, 0, 0]);
+  const firstMistake = overview.mistakes[0];
+  assert.equal(firstMistake.source, "plant-reproduction");
+  await client("/mistakes/resolve", { cookie: cookieA, body: { source: "unknown-quiz", q: firstMistake.q }, status: 400 });
+  await client("/mistakes/resolve", { cookie: cookieA, body: { source: firstMistake.source, q: firstMistake.q } });
+  const afterResolve = (await client("/dashboard", { cookie: cookieA })).data.overview;
+  assert.equal(afterResolve.mistakeCount, 4);
+  assert.ok(!afterResolve.mistakes.some((item) => item.q === firstMistake.q));
+  assert.equal((await client("/dashboard", { cookie: cookieB })).data.overview.mistakeCount, 0);
 
   await close();
   await open();

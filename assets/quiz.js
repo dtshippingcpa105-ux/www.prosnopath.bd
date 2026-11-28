@@ -91,7 +91,10 @@
     for (const section of [pick, run, result]) section.hidden = section !== screen;
   }
 
-  async function start() {
+  let retryItems = null;
+  let lastReview = [];
+
+  async function start(customItems) {
     if (!selected || active || busy) return;
     if (studentQuiz) {
       busy = true;
@@ -111,7 +114,7 @@
         startButton.disabled = false;
       }
     } else {
-      items = shuffle(selected.mcq);
+      items = shuffle(customItems ?? selected.mcq);
     }
     answers = [];
     index = 0;
@@ -231,6 +234,18 @@
       || !["science", "math"].includes(selected.subjectId);
     get("quizReview").innerHTML = '<h3 class="review-title">উত্তর পর্যালোচনা</h3>'
       + PB.quizReview(review);
+    lastReview = review;
+    const missed = review.filter((item) => item.choice !== item.answer);
+    get("quizRetryWrong").hidden = studentQuiz || !missed.length;
+    get("quizRetryWrong").textContent = "শুধু ভুলগুলো আবার দিন (" + PB.bn(missed.length) + "টি)";
+    const pct = total ? correct / total : 0;
+    const advice = get("quizAdvice");
+    const noteLink = selected?.noteId ? ' <a href="' + PB.escape(PB.href("notes.html", { note: selected.noteId })) + '">অধ্যায়ের নোট পড়ুন</a>' : "";
+    advice.innerHTML = pct >= .8 ? "চমৎকার! এই অধ্যায়ে আপনার প্রস্তুতি ভালো। পরের অধ্যায়ে যান।"
+      : pct >= .5 ? "ভালো হয়েছে। ভুলগুলো আরেকবার অনুশীলন করলে আরও পাকা হবে।" + noteLink
+      : "এই অধ্যায়টা আরেকবার পড়ে নেওয়া ভালো, তারপর আবার কুইজ দিন।" + noteLink;
+    advice.dataset.level = pct >= .8 ? "high" : pct >= .5 ? "mid" : "low";
+    advice.hidden = false;
     showScreen(result);
     get("quizResultTitle").focus();
   }
@@ -273,6 +288,10 @@
     }
   });
   get("quizQuit").addEventListener("click", backToSetup);
+  get("quizRetryWrong").addEventListener("click", () => {
+    const missed = lastReview.filter((item) => item.choice !== item.answer).map(({ choice, position, ...item }) => item);
+    if (missed.length) start(missed);
+  });
   get("quizOther").addEventListener("click", backToSetup);
-  get("quizRetry").addEventListener("click", start);
+  get("quizRetry").addEventListener("click", () => start());
 })();

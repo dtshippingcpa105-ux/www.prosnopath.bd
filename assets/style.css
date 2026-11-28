@@ -446,3 +446,9 @@ progress::-webkit-progress-value { background: var(--blue); }
 .paper-quick-presets input:checked + span { border-color: #f59e0b; background: #fff7e8; }
 .paper-quick-presets input:focus-visible + span { outline: 3px solid #2848a8; outline-offset: 2px; }
 @media (max-width: 700px) { .paper-quick-presets { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* কুইজ ফলাফলের পরামর্শ */
+.quiz-advice { margin: .4rem auto .8rem; padding: .6rem .9rem; max-width: 34rem; border-radius: 10px; background: #e6f6ee; color: #0f5e3c; font-weight: 600; }
+.quiz-advice[data-level="mid"] { background: #fff4e0; color: #8a4b05; }
+.quiz-advice[data-level="low"] { background: #fdecec; color: #9b2227; }
+.quiz-advice a { color: inherit; }
