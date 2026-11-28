@@ -427,3 +427,22 @@ progress::-webkit-progress-value { background: var(--blue); }
 .btn-whatsapp:hover, .btn-whatsapp:focus-visible { background: #178a45; border-color: #178a45; color: #fff; }
 .btn-gform { background: #6a3fb5; border-color: #6a3fb5; color: #fff; }
 .btn-gform:hover, .btn-gform:focus-visible { background: #57319a; border-color: #57319a; color: #fff; }
+
+/* এক ক্লিকে প্রশ্নপত্র */
+.paper-quick { border-top: 4px solid #f59e0b; }
+.paper-quick fieldset { border: 1px solid var(--line); border-radius: 12px; padding: .7rem .9rem .9rem; margin: .8rem 0; }
+.paper-quick legend { padding: 0 .35rem; font-weight: 700; color: var(--navy); }
+.paper-quick-tools { display: flex; gap: 1rem; margin-bottom: .4rem; }
+.paper-quick-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: .35rem .9rem; max-height: 260px; overflow: auto; }
+.paper-quick-list label { display: flex; gap: .45rem; align-items: flex-start; font-weight: 500; }
+.paper-quick-list input { margin-top: .35rem; }
+.paper-quick-list small { color: var(--muted); }
+.paper-quick-presets { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .6rem; }
+.paper-quick-presets legend { grid-column: 1 / -1; }
+.paper-quick-presets label { position: relative; cursor: pointer; }
+.paper-quick-presets input { position: absolute; opacity: 0; }
+.paper-quick-presets span { display: grid; gap: .15rem; height: 100%; padding: .7rem .8rem; border: 2px solid var(--line); border-radius: 12px; background: #fff; }
+.paper-quick-presets small { color: var(--muted); }
+.paper-quick-presets input:checked + span { border-color: #f59e0b; background: #fff7e8; }
+.paper-quick-presets input:focus-visible + span { outline: 3px solid #2848a8; outline-offset: 2px; }
+@media (max-width: 700px) { .paper-quick-presets { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

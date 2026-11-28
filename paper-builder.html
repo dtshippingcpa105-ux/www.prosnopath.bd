@@ -67,7 +67,7 @@
   <main id="main" tabindex="-1" class="theme-page theme-paper">
     <section class="page-hero themed-hero" id="paperOverview">
       <div class="wrap themed-hero-grid">
-        <div class="themed-hero-copy"><h1>প্রশ্নপত্র তৈরি</h1><p>অধ্যায় থেকে প্রশ্ন বেছে ক্রম সাজান। পূর্ণমান মিলিয়ে শিক্ষার্থীর প্রশ্নপত্র ও শিক্ষকের উত্তরমালা আলাদাভাবে প্রিন্ট করুন।</p><div class="actions"><a class="btn btn-primary" href="#paperBankTitle">প্রশ্ন বাছাই শুরু করুন</a></div></div>
+        <div class="themed-hero-copy"><h1>প্রশ্নপত্র তৈরি</h1><p>এক ক্লিকে অধ্যায়ভিত্তিক প্রশ্নপত্র তৈরি করুন, অথবা নিজে প্রশ্ন বেছে ক্রম সাজান। শিক্ষার্থীর প্রশ্নপত্র ও শিক্ষকের উত্তরমালা আলাদাভাবে প্রিন্ট করুন।</p><div class="actions"><a class="btn btn-primary" href="#paperQuickTitle">⚡ এক ক্লিকে প্রশ্নপত্র</a><a class="btn btn-secondary" href="#paperBankTitle">নিজে প্রশ্ন বাছাই</a></div></div>
         <div class="hero-scene paper-scene">
           <article class="sample-card layout-sample">
             <p class="scene-label">প্রশ্নপত্রের নমুনা বিন্যাস</p>
@@ -97,6 +97,34 @@
             <label>বিষয়<select id="paperSubject"></select></label>
             <label>সময় (মিনিট)<input id="paperTime" type="number" min="1" max="300" value="30"></label>
             <label>অধ্যায়<select id="paperChapter"></select></label>
+          </div>
+        </section>
+        <section class="panel paper-controls paper-quick" id="paperQuick" aria-labelledby="paperQuickTitle">
+          <h2 id="paperQuickTitle"><span aria-hidden="true">⚡</span> এক ক্লিকে প্রশ্নপত্র</h2>
+          <p class="list-status">উপরে শ্রেণি ও বিষয় বেছে নিন। তারপর অধ্যায় আর পরীক্ষার ধরন ঠিক করে একটি বোতাম চাপুন। প্রশ্ন, সময় আর শিরোনাম নিজে থেকে বসে যাবে।</p>
+          <fieldset class="paper-quick-chapters">
+            <legend>অধ্যায়</legend>
+            <div class="paper-quick-tools">
+              <button type="button" class="text-button" id="paperQuickAll">সব বেছে নিন</button>
+              <button type="button" class="text-button" id="paperQuickNone">সব বাদ দিন</button>
+            </div>
+            <div id="paperQuickChapterList" class="paper-quick-list"></div>
+          </fieldset>
+          <fieldset class="paper-quick-presets">
+            <legend>পরীক্ষার ধরন</legend>
+            <label><input type="radio" name="paperPreset" value="quick" checked><span><strong>দ্রুত যাচাই</strong><small>১০টি MCQ</small></span></label>
+            <label><input type="radio" name="paperPreset" value="class"><span><strong>ক্লাস টেস্ট</strong><small>১০ MCQ + ২ লিখিত</small></span></label>
+            <label><input type="radio" name="paperPreset" value="chapter"><span><strong>অধ্যায় পরীক্ষা</strong><small>২০ MCQ + ৪ লিখিত</small></span></label>
+            <label><input type="radio" name="paperPreset" value="custom"><span><strong>নিজের মতো</strong><small>সংখ্যা নিজে দিন</small></span></label>
+          </fieldset>
+          <div class="filter-grid" id="paperQuickCustom" hidden>
+            <label>MCQ সংখ্যা<input id="paperQuickMcq" type="number" min="0" max="60" value="15"></label>
+            <label>লিখিত সংখ্যা<input id="paperQuickShort" type="number" min="0" max="20" value="3"></label>
+          </div>
+          <p id="paperQuickInfo" class="muted" role="status"></p>
+          <div class="actions">
+            <button type="button" class="btn btn-primary" id="paperQuickMake">⚡ প্রশ্নপত্র তৈরি করুন</button>
+            <button type="button" class="btn btn-secondary" id="paperQuickAgain" hidden>নতুন প্রশ্নে আবার তৈরি করুন</button>
           </div>
         </section>
         <section class="panel paper-controls" aria-labelledby="paperBankTitle">

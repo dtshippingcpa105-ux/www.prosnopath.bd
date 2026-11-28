@@ -550,6 +550,109 @@
   });
   print.addEventListener("click", () => window.print());
 
+
+  // ---- এক ক্লিকে প্রশ্নপত্র ----
+  const quickList = byId("paperQuickChapterList");
+  const quickInfo = byId("paperQuickInfo");
+  const presets = { quick: [10, 0], class: [10, 2], chapter: [20, 4] };
+  let lastQuick = null;
+
+  function quickChapters() {
+    return all.filter((topic) => topic.classId === gradeSelect.value && topic.subjectId === subjectSelect.value);
+  }
+
+  function renderQuickChapters() {
+    const chapters = quickChapters();
+    const focus = chapterSelect.value;
+    quickList.innerHTML = chapters.map((topic, i) => '<label><input type="checkbox" value="' + esc(topic.chapter) + '"'
+      + (!focus || focus === topic.chapter ? " checked" : "") + '> <span>' + esc(topic.chapter)
+      + ' <small>(' + PB.bn(topic.mcq.length) + ' MCQ · ' + PB.bn(topic.short.length) + ' লিখিত)</small></span></label>').join("")
+      || '<p class="muted">এই বিষয়ে এখনো অধ্যায় যোগ হয়নি।</p>';
+    updateQuickInfo();
+  }
+
+  function quickTarget() {
+    const preset = document.querySelector("input[name=paperPreset]:checked").value;
+    byId("paperQuickCustom").hidden = preset !== "custom";
+    if (preset === "custom") {
+      const n = (id, max) => Math.min(max, Math.max(0, byId(id).valueAsNumber || 0));
+      return { preset, mcq: n("paperQuickMcq", 60), short: n("paperQuickShort", 20) };
+    }
+    return { preset, mcq: presets[preset][0], short: presets[preset][1] };
+  }
+
+  function chosenChapters() {
+    return [...quickList.querySelectorAll("input:checked")].map((box) => box.value);
+  }
+
+  function quickPool(chapters) {
+    const set = new Set(chapters);
+    return bank.filter((item) => item.classId === gradeSelect.value && item.subjectId === subjectSelect.value && set.has(item.chapter));
+  }
+
+  function updateQuickInfo() {
+    const chapters = chosenChapters();
+    const target = quickTarget();
+    const pool = quickPool(chapters);
+    const have = { mcq: pool.filter((i) => i.type === "mcq").length, short: pool.filter((i) => i.type === "short").length };
+    if (!chapters.length) { quickInfo.textContent = "অন্তত একটি অধ্যায় বেছে নিন।"; return; }
+    const short = [];
+    if (have.mcq < target.mcq) short.push("MCQ আছে " + PB.bn(have.mcq) + "টি");
+    if (have.short < target.short) short.push("লিখিত আছে " + PB.bn(have.short) + "টি");
+    quickInfo.textContent = PB.bn(chapters.length) + "টি অধ্যায় থেকে প্রশ্ন নেওয়া হবে।"
+      + (short.length ? " এই অধ্যায়গুলোতে " + short.join(", ") + ", তাই যতটা আছে ততটাই যোগ হবে।" : "");
+  }
+
+  // প্রতিটি অধ্যায় থেকে পালা করে নেওয়া, যাতে সব অধ্যায় থেকে প্রশ্ন আসে
+  function balancedPick(pool, type, count, chapters) {
+    const queues = chapters.map((chapter) => mix(pool.filter((i) => i.type === type && i.chapter === chapter)));
+    const picked = [];
+    while (picked.length < count && queues.some((q) => q.length)) {
+      for (const q of mix(queues)) {
+        if (picked.length >= count) break;
+        if (q.length) picked.push(q.shift());
+      }
+    }
+    return picked;
+  }
+
+  function makeQuickPaper() {
+    const chapters = chosenChapters();
+    if (!chapters.length) { quickInfo.textContent = "অন্তত একটি অধ্যায় বেছে নিন।"; return; }
+    const target = quickTarget();
+    if (!target.mcq && !target.short) { quickInfo.textContent = "অন্তত একটি প্রশ্নের সংখ্যা দিন।"; return; }
+    const pool = quickPool(chapters);
+    const mcqs = balancedPick(pool, "mcq", target.mcq, chapters);
+    const written = balancedPick(pool, "short", target.short, chapters);
+    if (!mcqs.length && !written.length) { quickInfo.textContent = "এই অধ্যায়গুলোতে এখনো প্রশ্ন নেই।"; return; }
+    const hadDraft = selected.length;
+    selected = [...mcqs, ...written].slice(0, maxQuestions);
+    const subjectName = SUBJECTS[subjectSelect.value].name;
+    const label = { quick: "দ্রুত যাচাই", class: "ক্লাস টেস্ট", chapter: "অধ্যায় পরীক্ষা", custom: "অনুশীলন পরীক্ষা" }[target.preset];
+    const allChapters = chapters.length === quickChapters().length && chapters.length > 1;
+    byId("paperTitle").value = (chapters.length === 1 ? chapters[0] : allChapters ? subjectName : subjectName + " · " + PB.bn(chapters.length) + " অধ্যায়") + " · " + label;
+    const writtenMarks = written.reduce((sum, item) => sum + item.marks, 0);
+    byId("paperTime").value = String(Math.min(300, Math.max(10, Math.ceil((mcqs.length + writtenMarks * 2) / 5) * 5)));
+    lastQuick = true;
+    byId("paperQuickAgain").hidden = false;
+    keyMode = false;
+    const missing = mcqs.length < target.mcq || written.length < target.short;
+    render(PB.bn(selected.length) + "টি প্রশ্নের প্রশ্নপত্র তৈরি হয়েছে"
+      + (hadDraft ? " (আগের খসড়ার জায়গায়)" : "") + "।"
+      + (missing ? " চাহিদার চেয়ে কম প্রশ্ন ছিল, যতটা আছে ততটাই নেওয়া হয়েছে।" : ""));
+    byId("paperOutput").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  quickList.addEventListener("change", updateQuickInfo);
+  for (const radio of document.querySelectorAll("input[name=paperPreset]")) radio.addEventListener("change", updateQuickInfo);
+  for (const id of ["paperQuickMcq", "paperQuickShort"]) byId(id).addEventListener("input", updateQuickInfo);
+  byId("paperQuickAll").addEventListener("click", () => { for (const box of quickList.querySelectorAll("input")) box.checked = true; updateQuickInfo(); });
+  byId("paperQuickNone").addEventListener("click", () => { for (const box of quickList.querySelectorAll("input")) box.checked = false; updateQuickInfo(); });
+  byId("paperQuickMake").addEventListener("click", makeQuickPaper);
+  byId("paperQuickAgain").addEventListener("click", makeQuickPaper);
+  for (const select of [gradeSelect, subjectSelect, chapterSelect]) select.addEventListener("change", renderQuickChapters);
+  renderQuickChapters();
+
   byId("paperWorkspace").hidden = false;
   byId("paperOutput").hidden = false;
   render();
